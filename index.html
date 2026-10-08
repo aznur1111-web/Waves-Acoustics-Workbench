@@ -1,0 +1,2320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fafafa">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="Aznur Waves & Acoustics engineering calculator and visual lab. Offline, single-file, fast. Your calculations never leave your device.">
+<title>AZNUR WAVES | Waves & Acoustics Workbench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   AZNUR WAVES — stone + amber light theme, dark lab stage
+   ============================================================ */
+:root{
+  --bg:#fafafa; --surface:#fff; --surface-soft:#f7f5f2;
+  --border:#e7e5e4; --text:#1c1917; --muted:#57534e; --faint:#78716c;
+  --accent:#f59e0b; --accent-h:#d97706; --ok:#10b981; --err:#ef4444;
+  --shadow:0 1px 2px rgba(0,0,0,.05);
+  --r:6px; --rl:10px;
+  --mono:"IBM Plex Mono",Consolas,"Liberation Mono",monospace;
+  --sans:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  /* lab stage */
+  --lbg:#191512; --lbg2:#211d18; --lline:#2a2620; --ltext:#f5f5f4; --lmuted:#a8a29e;
+  --ltrace:#fbbf24;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ---------- Header ---------- */
+header{position:sticky;top:0;z-index:30;background:var(--surface);
+  border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;
+  padding:0 20px;gap:20px}
+.brand{display:flex;align-items:center;gap:10px;min-width:218px}
+.brand-mark{width:32px;height:32px;border:1px solid var(--accent);border-radius:7px;
+  display:grid;place-items:center;color:var(--accent-h);font:700 16px var(--mono);background:#fffbeb}
+.brand-name{font-weight:700;letter-spacing:1.4px;font-size:14px}
+.brand-sub{display:block;font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:1px}
+.tabs{display:flex;gap:4px;overflow-x:auto;flex:1;height:100%;align-items:flex-end;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:transparent;padding:0 11px;height:64px;color:var(--muted);
+  font-size:12px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--accent-h);border-color:var(--accent)}
+.header-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.mini{height:32px;padding:0 12px;border:1px solid var(--border);background:var(--surface);
+  border-radius:var(--r);color:var(--muted);font-size:11px;font-weight:600;transition:all .2s}
+.mini:hover{border-color:var(--accent);background:#fffbeb;color:var(--text)}
+.mini.primary{background:var(--text);border-color:var(--text);color:#fff}
+.mini.primary:hover{background:#333;border-color:#333}
+
+/* ---------- Layout ---------- */
+#layout{display:flex;min-height:calc(100vh - 64px)}
+aside{width:250px;flex:0 0 250px;background:var(--bg);border-right:1px solid var(--border);
+  position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.side-head{padding:16px 16px 10px;color:var(--muted);font-size:10px;letter-spacing:1.4px;
+  text-transform:uppercase;font-weight:600}
+.side-group{border-top:1px solid var(--border)}
+.side-btn{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;
+  border:0;background:transparent;padding:10px 16px;color:var(--muted);text-align:left;
+  font-size:12px;transition:all .2s}
+.side-btn:hover{background:var(--surface);color:var(--text)}
+.side-btn.on{color:var(--accent-h);background:var(--surface);font-weight:600}
+.side-btn b{font:500 9px var(--mono);color:var(--muted);background:var(--surface-soft);
+  border:1px solid var(--border);padding:2px 6px;border-radius:4px}
+main{min-width:0;flex:1;padding:24px 24px 40px}
+.page{max-width:1480px;margin:0 auto}
+
+/* ---------- Hero / panes ---------- */
+.hero{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.hero-text{flex:1;min-width:200px}
+.hero h1{font-size:1.7rem;font-weight:700;letter-spacing:-.4px;margin:0}
+.hero p{color:var(--muted);font-size:.9rem;margin-top:4px;max-width:760px}
+.hero .tag{border:1px solid var(--border);background:var(--surface);border-radius:999px;
+  padding:6px 12px;font:600 10px var(--mono);color:var(--accent-h);white-space:nowrap}
+.pane{display:none}
+.pane.on{display:block;animation:fade .18s ease-out}
+@keyframes fade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+/* ---------- Grid / cards ---------- */
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-7{grid-column:span 7}
+.span-6{grid-column:span 6}.span-5{grid-column:span 5}.span-4{grid-column:span 4}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);
+  box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:13px}
+.card h2,.card h3{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent-h);
+  margin:0;font-weight:700}
+.card h2 small,.card h3 small{color:var(--muted);font-size:10px;text-transform:none;
+  letter-spacing:0;font-weight:400;margin-left:6px}
+.card.accent{border-top:2px solid var(--accent)}
+.desc{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* ---------- Forms ---------- */
+.fields{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.field{display:grid;grid-template-columns:110px 1fr 50px;align-items:center;gap:8px}
+.field.no-unit{grid-template-columns:110px 1fr}
+.field.full{grid-column:1 / -1}
+.field label{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.field input,.field select{height:32px;width:100%;border:1px solid var(--border);background:var(--surface);
+  border-radius:var(--r);padding:0 10px;color:var(--text);font-family:var(--mono);font-size:12px;text-align:right}
+.field input[type=text]{text-align:left}
+.field select{text-align:left}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(245,158,11,.12)}
+.unit{font:11px var(--mono);color:var(--muted)}
+
+/* ---------- Buttons ---------- */
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{height:32px;border:1px solid var(--border);background:var(--surface);border-radius:var(--r);
+  padding:0 14px;color:var(--muted);font-size:11px;font-weight:600;transition:all .2s}
+.btn:hover{border-color:var(--accent);background:#fffbeb;color:var(--text)}
+.btn.primary{background:var(--text);color:#fff;border-color:var(--text)}
+.btn.primary:hover{background:#333;border-color:#333}
+
+/* ---------- Results ---------- */
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 12px;min-width:0}
+.stat .k{font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;font-weight:600}
+.stat .v{font:700 15px var(--mono);color:var(--text);margin:4px 0 0;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.stat .u{font-size:10px;color:var(--muted);font-weight:400}
+.stat.hot .v{color:var(--accent-h)}
+.stat.good .v{color:var(--ok)}
+.stat.bad .v{color:var(--err)}
+.stat.wide{grid-column:1 / -1}
+.stat.wide .v{font-size:11.5px;white-space:normal;overflow:visible;font-weight:600}
+
+.formula{font:11px/1.6 var(--mono);color:var(--muted);background:#fffbeb;
+  border-left:2px solid var(--accent);padding:10px 12px;border-radius:0 var(--r) var(--r) 0}
+.formula b{color:var(--text)}
+.note{font-size:11px;color:var(--muted);line-height:1.6}
+.tip{padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;
+  border-radius:var(--r);font-size:11px;line-height:1.5}
+.notice{padding:10px;border:1px dashed #d6d3d1;background:#fafafa;border-radius:var(--r);
+  font-size:11px;color:var(--muted);line-height:1.6}
+
+/* ---------- Tables ---------- */
+.table-scroll{overflow:auto;border:1px solid var(--border);border-radius:var(--r);
+  max-height:420px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font:11px var(--mono)}
+th,td{padding:8px 10px;border:1px solid var(--border);text-align:right;white-space:nowrap}
+th{position:sticky;top:0;background:#fafafa;color:var(--muted);font-weight:600;
+  text-transform:uppercase;font-size:9px;letter-spacing:.5px}
+td{color:var(--text)}
+td.l{text-align:left}
+td.eq{font-family:var(--mono);font-size:12px;text-align:left}
+tr:hover td{background:#fffbeb}
+
+/* ---------- Visual Lab ---------- */
+.lab-shell{background:var(--lbg);border-radius:14px;border:1px solid #2a2521;overflow:hidden;
+  box-shadow:0 10px 30px -18px rgba(28,25,23,.55)}
+.lab-top{display:flex;align-items:center;gap:14px;padding:10px 14px;flex-wrap:wrap;
+  background:var(--lbg2);border-bottom:1px solid var(--lline)}
+.lab-modes{display:flex;gap:2px;background:#141110;padding:3px;border-radius:9px;flex-wrap:wrap}
+.lab-mode{height:28px;padding:0 12px;border:0;border-radius:6px;background:transparent;
+  color:var(--lmuted);font-size:11px;font-weight:600;transition:all .15s}
+.lab-mode:hover{color:var(--ltext)}
+.lab-mode.on{background:var(--accent);color:#1c1917}
+.lab-transport{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lab-btn{width:30px;height:30px;display:grid;place-items:center;background:#141110;
+  border:1px solid var(--lline);border-radius:7px;color:var(--ltext);transition:all .15s}
+.lab-btn:hover{background:#2e2924;color:var(--ltrace);border-color:#3d362e}
+.lab-speed{display:flex;align-items:center;gap:8px;font-size:9px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--lmuted)}
+.lab-speed input{width:88px}
+.lab-speed span{font:600 10px var(--mono);color:var(--ltrace);min-width:38px}
+.lab-shell input[type=range]{-webkit-appearance:none;appearance:none;height:16px;
+  background:transparent;cursor:pointer}
+.lab-shell input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:#3d372f}
+.lab-shell input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;
+  margin-top:-5px;border-radius:50%;background:var(--accent);border:2px solid var(--lbg);
+  box-shadow:0 0 0 1.5px var(--accent)}
+.lab-shell input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:#3d372f}
+.lab-shell input[type=range]::-moz-range-thumb{width:10px;height:10px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--lbg);box-shadow:0 0 0 1.5px var(--accent)}
+.lab-hint{padding:9px 14px;background:var(--lbg2);border-bottom:1px solid var(--lline);
+  color:var(--lmuted);font-size:11px;line-height:1.5}
+.lab-stage{position:relative;height:clamp(340px,52vh,520px);background:#141110}
+.lab-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
+.lab-readouts{position:absolute;top:10px;right:12px;display:flex;gap:6px;flex-wrap:wrap;
+  justify-content:flex-end;max-width:62%;pointer-events:none}
+.rpill{background:rgba(20,17,16,.78);border:1px solid #3d372e;color:var(--lmuted);
+  font:600 10px var(--mono);padding:4px 9px;border-radius:6px;backdrop-filter:blur(3px)}
+.rpill b{color:var(--ltrace)}
+.lab-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));
+  gap:12px 22px;padding:16px;background:var(--lbg2);border-top:1px solid var(--lline)}
+.ctl{display:flex;flex-direction:column;gap:5px;min-width:0}
+.ctl-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl-row label{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--lmuted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctl-row .ctl-val{font:600 11px var(--mono);color:var(--ltrace);white-space:nowrap}
+.ctl select{height:30px;background:#141110;color:var(--ltext);border:1px solid #3d372e;
+  border-radius:7px;padding:0 8px;font:600 11px var(--mono)}
+
+/* ---------- Footer / toast ---------- */
+.footer{margin-top:24px;padding:16px 0;color:var(--muted);font-size:11px;
+  border-top:1px solid var(--border);text-align:center}
+.toast{position:fixed;right:20px;bottom:20px;z-index:60;background:#ecfdf5;color:#047857;
+  border:1px solid #a7f3d0;padding:10px 14px;border-radius:var(--r);font:600 11px var(--mono);
+  opacity:0;pointer-events:none;transform:translateY(5px);transition:.2s}
+.toast.show{opacity:1;transform:none}
+
+/* ---------- Responsive ---------- */
+@media(max-width:900px){
+  header{height:auto;min-height:64px;flex-wrap:wrap;padding:10px 16px;gap:10px}
+  .brand{min-width:0}
+  .tabs{order:3;width:100%;height:40px}
+  .tab{height:40px;padding-bottom:8px}
+  #layout{display:block}
+  aside{display:none}
+  main{padding:20px 16px 40px}
+  .grid{grid-template-columns:1fr}
+  .grid>[class*=span-]{grid-column:span 1}
+  .hero{align-items:flex-start;flex-direction:column}
+  .fields{grid-template-columns:1fr}
+  .field{grid-template-columns:90px 1fr 40px}
+  .field.no-unit{grid-template-columns:90px 1fr}
+  .lab-readouts{max-width:100%}
+}
+@media print{
+  header{position:static}
+  .tabs,.header-actions,aside,.actions,.lab-top,.lab-hint,.lab-controls,.toast{display:none!important}
+  main{padding:0}
+  .pane{display:block!important}
+  .card{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark">~</div>
+    <div>
+      <div class="brand-name">AZNUR WAVES</div>
+      <span class="brand-sub">WAVES &amp; ACOUSTICS WORKBENCH</span>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs" aria-label="Main sections">
+    <button class="tab on" data-pane="home">Overview</button>
+    <button class="tab" data-pane="wave">Wave Basics</button>
+    <button class="tab" data-pane="interference">Interference</button>
+    <button class="tab" data-pane="standing">Standing</button>
+    <button class="tab" data-pane="reflection">Boundaries</button>
+    <button class="tab" data-pane="sound">Sound</button>
+    <button class="tab" data-pane="acoustic">Room Acoustics</button>
+    <button class="tab" data-pane="doppler">Doppler</button>
+    <button class="tab" data-pane="fourier">Signals</button>
+    <button class="tab" data-pane="ultrasound">Ultrasound</button>
+    <button class="tab" data-pane="waveguides">Waveguides</button>
+    <button class="tab" data-pane="lab">Visual Lab</button>
+    <button class="tab" data-pane="reference">Reference</button>
+  </nav>
+  <div class="header-actions">
+    <button class="mini" id="printBtn">Print</button>
+    <button class="mini primary" id="resetBtn">Reset</button>
+  </div>
+</header>
+
+<div id="layout">
+<aside aria-label="Toolbook">
+  <div class="side-group">
+    <div class="side-head">Core Waves</div>
+    <button class="side-btn on" data-pane="home"><span>Overview</span><b>00</b></button>
+    <button class="side-btn" data-pane="wave"><span>Wave Basics</span><b>01</b></button>
+    <button class="side-btn" data-pane="interference"><span>Interference</span><b>02</b></button>
+    <button class="side-btn" data-pane="standing"><span>Standing Waves</span><b>03</b></button>
+    <button class="side-btn" data-pane="reflection"><span>Boundaries</span><b>04</b></button>
+  </div>
+  <div class="side-group">
+    <div class="side-head">Acoustics</div>
+    <button class="side-btn" data-pane="sound"><span>Sound Levels</span><b>05</b></button>
+    <button class="side-btn" data-pane="acoustic"><span>Room Acoustics</span><b>06</b></button>
+    <button class="side-btn" data-pane="doppler"><span>Doppler &amp; Mach</span><b>07</b></button>
+  </div>
+  <div class="side-group">
+    <div class="side-head">Signals &amp; Apps</div>
+    <button class="side-btn" data-pane="fourier"><span>Fourier &amp; Signals</span><b>08</b></button>
+    <button class="side-btn" data-pane="ultrasound"><span>Ultrasound</span><b>09</b></button>
+    <button class="side-btn" data-pane="waveguides"><span>Waveguides</span><b>10</b></button>
+  </div>
+  <div class="side-group">
+    <div class="side-head">Lab &amp; Ref</div>
+    <button class="side-btn" data-pane="lab"><span>Visual Lab</span><b>11</b></button>
+    <button class="side-btn" data-pane="reference"><span>Reference</span><b>12</b></button>
+  </div>
+</aside>
+
+<main>
+<div class="page">
+
+<!-- ============================ HOME ============================ -->
+<section class="pane on" id="pane-home">
+  <div class="hero">
+    <div class="hero-text">
+      <h1>Waves &amp; Acoustics Workbench</h1>
+      <p>Fast calculators, engineering formulas, and interactive wave experiments in one offline file. Your calculations never leave your device.</p>
+    </div>
+    <div class="tag">SINGLE FILE · OFFLINE · FAST</div>
+  </div>
+  <div class="grid">
+    <div class="card span-8 accent">
+      <h2>Start with a problem</h2>
+      <p class="desc">Jump to any calculator using the tabs above or the left toolbook. Every field recalculates live as you type. All tools use SI units unless explicitly labeled otherwise.</p>
+      <div class="tip">Use the <b>Visual Lab</b> for live rendering of traveling waves, standing waves with partial reflection, two-source interference, beats, Fourier synthesis and Doppler shock cones.</div>
+    </div>
+    <div class="card span-4">
+      <h2>Constants</h2>
+      <div class="results">
+        <div class="stat"><div class="k">Sound speed (air 20°C)</div><div class="v">343<span class="u"> m/s</span></div></div>
+        <div class="stat"><div class="k">Reference p₀</div><div class="v">20<span class="u"> μPa</span></div></div>
+        <div class="stat"><div class="k">Reference I₀</div><div class="v">10⁻¹²<span class="u"> W/m²</span></div></div>
+        <div class="stat"><div class="k">Air density (20°C)</div><div class="v">1.20<span class="u"> kg/m³</span></div></div>
+      </div>
+    </div>
+    <div class="card span-6" data-calc="home">
+      <h2>Wave Equation Quick Check</h2>
+      <div class="fields">
+        <div class="field"><label>Speed v</label><input id="home_v" type="number" step="any" value="343"><span class="unit">m/s</span></div>
+        <div class="field"><label>Frequency f</label><input id="home_f" type="number" step="any" value="440"><span class="unit">Hz</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="homeOut"></div>
+    </div>
+    <div class="card span-6" data-calc="homeSPL">
+      <h2>Sound Pressure Level</h2>
+      <div class="fields">
+        <div class="field"><label>RMS pressure p</label><input id="home_p" type="number" step="any" value="0.2"><span class="unit">Pa</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="homeSPLOut"></div>
+    </div>
+    <div class="card span-12">
+      <h2>Scope</h2>
+      <div class="notice">Calculators use standard SI relationships and common engineering approximations. Material properties, losses, and environmental factors are user inputs. Results are intended for education, preliminary design and quick checking — not certified metrology or code compliance.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ WAVE BASICS ============================ -->
+<section class="pane" id="pane-wave">
+  <div class="hero">
+    <div class="hero-text"><h1>Wave Fundamentals</h1><p>Move between frequency, wavelength, period, phase, velocity and harmonic motion.</p></div>
+    <div class="tag">CORE WAVES</div>
+  </div>
+  <div class="grid">
+    <div class="card span-6 accent" data-calc="wv">
+      <h2>Wave Equation Solver <small>v = fλ</small></h2>
+      <div class="desc">Solve for any missing quantity among speed, frequency and wavelength.</div>
+      <div class="fields">
+        <div class="field"><label>Speed v</label><input id="wv_v" type="number" step="any" value="343"><span class="unit">m/s</span></div>
+        <div class="field"><label>Frequency f</label><input id="wv_f" type="number" step="any" value="440"><span class="unit">Hz</span></div>
+        <div class="field"><label>Wavelength λ</label><input id="wv_l" type="number" step="any" placeholder="auto"><span class="unit">m</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="wvOut"></div>
+      <div class="formula"><b>v = fλ</b> — leave exactly one field blank (or zero) to solve for it.</div>
+    </div>
+
+    <div class="card span-6" data-calc="wp">
+      <h2>Wave Parameters</h2>
+      <div class="desc">Frequency into period, angular frequency, wave number, and instantaneous displacement y(x,t).</div>
+      <div class="fields">
+        <div class="field"><label>Frequency f</label><input id="wp_f" type="number" step="any" value="5"><span class="unit">Hz</span></div>
+        <div class="field"><label>Wavelength λ</label><input id="wp_l" type="number" step="any" value="2"><span class="unit">m</span></div>
+        <div class="field"><label>Speed v</label><input id="wp_v" type="number" step="any" value="10"><span class="unit">m/s</span></div>
+        <div class="field"><label>Position x</label><input id="wp_x" type="number" step="any" value="0.5"><span class="unit">m</span></div>
+        <div class="field"><label>Time t</label><input id="wp_t" type="number" step="any" value="0.25"><span class="unit">s</span></div>
+        <div class="field"><label>Amplitude A</label><input id="wp_A" type="number" step="any" value="1"><span class="unit">m</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="wpOut"></div>
+    </div>
+
+    <div class="card span-6" data-calc="sh">
+      <h2>Simple Harmonic Motion</h2>
+      <div class="desc">Period, angular frequency, maximum speed and acceleration for a mass–spring system.</div>
+      <div class="fields">
+        <div class="field"><label>Amplitude A</label><input id="sh_A" type="number" step="any" value="0.05"><span class="unit">m</span></div>
+        <div class="field"><label>Mass m</label><input id="sh_m" type="number" step="any" value="1"><span class="unit">kg</span></div>
+        <div class="field"><label>Spring k</label><input id="sh_k" type="number" step="any" value="100"><span class="unit">N/m</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="shOut"></div>
+      <div class="formula"><b>ω = √(k/m)</b>, T = 2π/ω, E = ½kA²</div>
+    </div>
+
+    <div class="card span-6" data-calc="wi">
+      <h2>Wave Intensity &amp; Power</h2>
+      <div class="desc">Relate carried power, area and intensity. With density, sound speed and particle velocity, the plane-wave intensity is also computed.</div>
+      <div class="fields">
+        <div class="field"><label>Power P</label><input id="wi_P" type="number" step="any" value="10"><span class="unit">W</span></div>
+        <div class="field"><label>Area S</label><input id="wi_S" type="number" step="any" value="2"><span class="unit">m²</span></div>
+        <div class="field"><label>Density ρ</label><input id="wi_rho" type="number" step="any" value="1.2"><span class="unit">kg/m³</span></div>
+        <div class="field"><label>Sound speed c</label><input id="wi_c" type="number" step="any" value="343"><span class="unit">m/s</span></div>
+        <div class="field"><label>Particle amp u₀</label><input id="wi_u" type="number" step="any" value="0.01"><span class="unit">m/s</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="wiOut"></div>
+      <div class="formula"><b>I = P/S</b>, plane wave: I = ½ρcu₀²</div>
+    </div>
+
+    <div class="card span-7" data-calc="ph">
+      <h2>Phase &amp; Path Difference</h2>
+      <div class="desc">Translate path difference into phase difference and the interference condition.</div>
+      <div class="fields">
+        <div class="field"><label>Path diff Δx</label><input id="ph_dx" type="number" step="any" value="0.25"><span class="unit">m</span></div>
+        <div class="field"><label>Wavelength λ</label><input id="ph_l" type="number" step="any" value="1"><span class="unit">m</span></div>
+        <div class="field full"><label>Initial phase φ₀</label><input id="ph_p0" type="number" step="any" value="0"><span class="unit">deg</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="phOut"></div>
+      <div class="formula"><b>Δφ = 2πΔx/λ + φ₀</b></div>
+    </div>
+
+    <div class="card span-5">
+      <h2>Reading the results</h3>
+      <div class="note">Rows tagged <b>hot</b> are the primary solved quantity. Consistency checks compare your inputs against the governing relation and flag mismatches — handy for catching unit slips before they propagate.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ INTERFERENCE ============================ -->
+<section class="pane" id="pane-interference">
+  <div class="hero">
+    <div class="hero-text"><h1>Interference &amp; Superposition</h1><p>Two coherent waves, fringe conditions, beats, and resultant amplitudes.</p></div>
+    <div class="tag">SUPERPOSITION</div>
+  </div>
+  <div class="grid">
+    <div class="card span-7 accent" data-calc="su">
+      <h2>Two-Wave Superposition</h2>
+      <div class="desc">Resultant amplitude for equal-frequency waves with arbitrary amplitudes and phase.</div>
+      <div class="fields">
+        <div class="field"><label>Amplitude A₁</label><input id="su_a1" type="number" step="any" value="1"><span class="unit">arb</span></div>
+        <div class="field"><label>Amplitude A₂</label><input id="su_a2" type="number" step="any" value="0.7"><span class="unit">arb</span></div>
+        <div class="field full"><label>Phase diff φ</label><input id="su_phi" type="number" step="any" value="60"><span class="unit">deg</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="suOut"></div>
+      <div class="formula"><b>Aᵣ² = A₁² + A₂² + 2A₁A₂ cosφ</b></div>
+    </div>
+
+    <div class="card span-5" data-calc="ic">
+      <h2>Interference Condition</h2>
+      <div class="desc">Constructive or destructive interference from the path difference.</div>
+      <div class="fields">
+        <div class="field"><label>Path Δx</label><input id="ic_dx" type="number" step="any" value="0.5"><span class="unit">m</span></div>
+        <div class="field"><label>Wavelength λ</label><input id="ic_l" type="number" step="any" value="1"><span class="unit">m</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="icOut"></div>
+      <div class="formula">Constructive: <b>Δx = mλ</b> · Destructive: <b>Δx = (m+½)λ</b></div>
+    </div>
+
+    <div class="card span-6" data-calc="bt">
+      <h2>Beats</h2>
+      <div class="desc">Beat frequency, beat period and the perceived carrier.</div>
+      <div class="fields">
+        <div class="field"><label>Frequency f₁</label><input id="bt_f1" type="number" step="any" value="440"><span class="unit">Hz</span></div>
+        <div class="field"><label>Frequency f₂</label><input id="bt_f2" type="number" step="any" value="444"><span class="unit">Hz</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="btOut"></div>
+      <div class="formula"><b>f_beat = |f₁ − f₂|</b></div>
+    </div>
+
+    <div class="card span-6" data-calc="tr">
+      <h2>Three-Source Resultant</h2>
+      <div class="desc">Phasor sum of three equal-frequency sources (φ₁ = 0).</div>
+      <div class="fields">
+        <div class="field"><label>A₁</label><input id="tr_a1" type="number" step="any" value="1"><span class="unit">arb</span></div>
+        <div class="field"><label>A₂</label><input id="tr_a2" type="number" step="any" value="1"><span class="unit">arb</span></div>
+        <div class="field"><label>φ₂</label><input id="tr_p2" type="number" step="any" value="120"><span class="unit">deg</span></div>
+        <div class="field"><label>A₃</label><input id="tr_a3" type="number" step="any" value="1"><span class="unit">arb</span></div>
+        <div class="field full"><label>φ₃</label><input id="tr_p3" type="number" step="any" value="240"><span class="unit">deg</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="trOut"></div>
+    </div>
+
+    <div class="card span-6" data-calc="fv">
+      <h2>Fringe Visibility</h2>
+      <div class="desc">Maximum/minimum intensity and visibility from the source intensities.</div>
+      <div class="fields">
+        <div class="field"><label>Intensity I₁</label><input id="fv_i1" type="number" step="any" value="4"><span class="unit">arb</span></div>
+        <div class="field"><label>Intensity I₂</label><input id="fv_i2" type="number" step="any" value="1"><span class="unit">arb</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="fvOut"></div>
+      <div class="formula"><b>V = (I_max − I_min)/(I_max + I_min)</b></div>
+    </div>
+
+    <div class="card span-6">
+      <h2>See it live</h2>
+      <div class="tip">The <b>Visual Lab → Two-source interference</b> experiment renders the full 2-D superposition field, with a switch between the instantaneous wavefield and the time-averaged intensity fringes.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ STANDING ============================ -->
+<section class="pane" id="pane-standing">
+  <div class="hero">
+    <div class="hero-text"><h1>Standing Waves &amp; Resonators</h1><p>Strings, open and closed pipes, harmonics, nodes and quality factor.</p></div>
+    <div class="tag">RESONANCE</div>
+  </div>
+  <div class="grid">
+    <div class="card span-7 accent" data-calc="st">
+      <h2>Stretched String</h2>
+      <div class="desc">Fundamental and harmonic series from length, tension and linear density.</div>
+      <div class="fields">
+        <div class="field"><label>Length L</label><input id="st_L" type="number" step="any" value="1"><span class="unit">m</span></div>
+        <div class="field"><label>Tension T</label><input id="st_T" type="number" step="any" value="100"><span class="unit">N</span></div>
+        <div class="field"><label>Linear density μ</label><input id="st_mu" type="number" step="any" value="0.005"><span class="unit">kg/m</span></div>
+        <div class="field"><label>Harmonic n</label><input id="st_n" type="number" step="1" value="3"><span class="unit">mode</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="stOut"></div>
+      <div class="formula"><b>f_n = (n/2L)·√(T/μ)</b></div>
+    </div>
+
+    <div class="card span-5" data-calc="pp">
+      <h2>Air Column Resonance</h2>
+      <div class="desc">Open–open or closed–open cylindrical pipe modes.</div>
+      <div class="fields">
+        <div class="field"><label>Length L</label><input id="pp_L" type="number" step="any" value="0.5"><span class="unit">m</span></div>
+        <div class="field"><label>Sound speed c</label><input id="pp_c" type="number" step="any" value="343"><span class="unit">m/s</span></div>
+        <div class="field no-unit full"><label>Pipe type</label><select id="pp_type"><option value="open">Open–open</option><option value="closed">Closed–open</option></select></div>
+        <div class="field"><label>Mode n</label><input id="pp_n" type="number" step="1" value="1"><span class="unit">mode</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="ppOut"></div>
+    </div>
+
+    <div class="card span-7" data-calc="na">
+      <h2>Nodes &amp; Antinodes</h2>
+      <div class="desc">Node and antinode positions for a string fixed at both ends.</div>
+      <div class="fields">
+        <div class="field"><label>Length L</label><input id="na_L" type="number" step="any" value="1"><span class="unit">m</span></div>
+        <div class="field"><label>Mode n</label><input id="na_n" type="number" step="1" value="4"><span class="unit">mode</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="naOut"></div>
+    </div>
+
+    <div class="card span-5" data-calc="q">
+      <h2>Resonant System Q</h2>
+      <div class="desc">Quality factor from resonant frequency and bandwidth.</div>
+      <div class="fields">
+        <div class="field"><label>Resonant f₀</label><input id="q_f0" type="number" step="any" value="1000"><span class="unit">Hz</span></div>
+        <div class="field"><label>3 dB bandwidth Δf</label><input id="q_bw" type="number" step="any" value="20"><span class="unit">Hz</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="qOut"></div>
+      <div class="formula"><b>Q = f₀ / Δf</b></div>
+    </div>
+
+    <div class="card span-6" data-calc="we">
+      <h2>Wave Energy Density</h2>
+      <div class="desc">Average energy density of a sinusoidal mechanical wave.</div>
+      <div class="fields">
+        <div class="field"><label>Density ρ</label><input id="we_rho" type="number" step="any" value="1000"><span class="unit">kg/m³</span></div>
+        <div class="field"><label>Frequency f</label><input id="we_f" type="number" step="any" value="10"><span class="unit">Hz</span></div>
+        <div class="field full"><label>Displacement amp a</label><input id="we_a" type="number" step="any" value="0.001"><span class="unit">m</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="weOut"></div>
+      <div class="formula"><b>ū ≈ ½ρω²a²</b></div>
+    </div>
+
+    <div class="card span-6">
+      <h3>Practical notes</h3>
+      <div class="note">Real flanged pipes play sharper than the ideal formula — apply an <b>end correction</b> of about 0.6·r per open end to the effective length. The Visual Lab’s standing-wave experiment lets you sweep the reflection coefficient R from −1 (fixed end, pure standing wave) through 0 (no reflection, pure traveling wave) to +1 (free end) and watch the standing-wave ratio change.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ REFLECTION ============================ -->
+<section class="pane" id="pane-reflection">
+  <div class="hero">
+    <div class="hero-text"><h1>Reflection, Refraction &amp; Transmission</h1><p>Boundary coefficients and refraction for acoustic and optical-style interfaces.</p></div>
+    <div class="tag">BOUNDARIES</div>
+  </div>
+  <div class="grid">
+    <div class="card span-6 accent" data-calc="rc">
+      <h2>Reflection Coefficient</h2>
+      <div class="desc">Normal-incidence amplitude and power reflection from two impedances.</div>
+      <div class="fields">
+        <div class="field"><label>Medium 1 Z₁</label><input id="rc_z1" type="number" step="any" value="400"><span class="unit">Rayl</span></div>
+        <div class="field"><label>Medium 2 Z₂</label><input id="rc_z2" type="number" step="any" value="1500"><span class="unit">Rayl</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="rcOut"></div>
+      <div class="formula"><b>r = (Z₂ − Z₁)/(Z₂ + Z₁)</b>, R = r²</div>
+    </div>
+
+    <div class="card span-6" data-calc="sn">
+      <h2>Snell Refraction</h2>
+      <div class="desc">Use c₁/c₂ (or, for light, c₁ &gt; c₂) to find the transmitted angle.</div>
+      <div class="fields">
+        <div class="field"><label>Speed c₁</label><input id="sn_c1" type="number" step="any" value="343"><span class="unit">m/s</span></div>
+        <div class="field"><label>Speed c₂</label><input id="sn_c2" type="number" step="any" value="1480"><span class="unit">m/s</span></div>
+        <div class="field full"><label>Incident angle θ₁</label><input id="sn_th" type="number" step="any" value="30"><span class="unit">deg</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="snOut"></div>
+      <div class="formula"><b>sinθ₂ = (c₂/c₁)·sinθ₁</b></div>
+    </div>
+
+    <div class="card span-6" data-calc="az">
+      <h2>Acoustic Impedance</h2>
+      <div class="desc">Characteristic impedance Z = ρc, with a mismatch check against air.</div>
+      <div class="fields">
+        <div class="field"><label>Density ρ</label><input id="az_rho" type="number" step="any" value="1000"><span class="unit">kg/m³</span></div>
+        <div class="field"><label>Sound speed c</label><input id="az_c" type="number" step="any" value="1480"><span class="unit">m/s</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="azOut"></div>
+    </div>
+
+    <div class="card span-6" data-calc="tc">
+      <h2>Power Transmission</h2>
+      <div class="desc">Normal-incidence transmitted power coefficient from impedance mismatch.</div>
+      <div class="fields">
+        <div class="field"><label>Z₁</label><input id="tc_z1" type="number" step="any" value="400"><span class="unit">Rayl</span></div>
+        <div class="field"><label>Z₂</label><input id="tc_z2" type="number" step="any" value="1500"><span class="unit">Rayl</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="tcOut"></div>
+      <div class="formula"><b>τ = 4Z₁Z₂ / (Z₁ + Z₂)²</b></div>
+    </div>
+
+    <div class="card span-6" data-calc="ca">
+      <h2>Critical Angle</h2>
+      <div class="desc">Total-internal-reflection threshold when c₂ &gt; c₁.</div>
+      <div class="fields">
+        <div class="field"><label>c₁</label><input id="ca_c1" type="number" step="any" value="1000"><span class="unit">m/s</span></div>
+        <div class="field"><label>c₂</label><input id="ca_c2" type="number" step="any" value="1500"><span class="unit">m/s</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="caOut"></div>
+      <div class="formula"><b>θc = sin⁻¹(c₁/c₂)</b></div>
+    </div>
+
+    <div class="card span-6">
+      <h3>Matching layers</h3>
+      <div class="note">A quarter-wave matching layer of impedance <b>√(Z₁Z₂)</b> and thickness λ/4 at the operating frequency cancels the reflection between two media — the principle behind anti-reflective coatings and ultrasound transducer matching layers.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SOUND ============================ -->
+<section class="pane" id="pane-sound">
+  <div class="hero">
+    <div class="hero-text"><h1>Sound &amp; Acoustic Levels</h1><p>Sound pressure, intensity, power, distance scaling and the speed of sound in air.</p></div>
+    <div class="tag">ACOUSTICS</div>
+  </div>
+  <div class="grid">
+    <div class="card span-6 accent" data-calc="spl">
+      <h2>Sound Pressure Level</h2>
+      <div class="desc">Convert RMS acoustic pressure into decibels relative to 20 μPa.</div>
+      <div class="fields">
+        <div class="field"><label>RMS pressure p</label><input id="spl_p" type="number" step="any" value="0.2"><span class="unit">Pa</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="splOut"></div>
+      <div class="formula"><b>L_p = 20 log₁₀(p / p₀)</b>, p₀ = 20 μPa</div>
+    </div>
+
+    <div class="card span-6" data-calc="sil">
+      <h2>Sound Intensity Level</h2>
+      <div class="desc">Convert intensity into dB relative to 10⁻¹² W/m².</div>
+      <div class="fields">
+        <div class="field"><label>Intensity I</label><input id="sil_i" type="number" step="any" value="0.001"><span class="unit">W/m²</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="silOut"></div>
+      <div class="formula"><b>L_I = 10 log₁₀(I / I₀)</b>, I₀ = 10⁻¹² W/m²</div>
+    </div>
+
+    <div class="card span-6" data-calc="sd">
+      <h2>Sound Level vs Distance</h2>
+      <div class="desc">Spherical spreading estimate of the level change with distance.</div>
+      <div class="fields">
+        <div class="field"><label>Level L₁</label><input id="sd_l1" type="number" step="any" value="80"><span class="unit">dB</span></div>
+        <div class="field"><label>Distance r₁</label><input id="sd_r1" type="number" step="any" value="2"><span class="unit">m</span></div>
+        <div class="field full"><label>Distance r₂</label><input id="sd_r2" type="number" step="any" value="8"><span class="unit">m</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="sdOut"></div>
+      <div class="formula"><b>ΔL = −20 log₁₀(r₂ / r₁)</b> (−6 dB per doubling)</div>
+    </div>
+
+    <div class="card span-6" data-calc="sp">
+      <h2>Sound Power to SPL</h2>
+      <div class="desc">Ideal free-field source estimate, neglecting directivity and environmental losses.</div>
+      <div class="fields">
+        <div class="field"><label>Sound power W</label><input id="sp_W" type="number" step="any" value="1"><span class="unit">W</span></div>
+        <div class="field"><label>Distance r</label><input id="sp_r" type="number" step="any" value="10"><span class="unit">m</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="spOut"></div>
+      <div class="formula"><b>I = W / 4πr²</b></div>
+    </div>
+
+    <div class="card span-5" data-calc="ss">
+      <h2>Speed of Sound</h2>
+      <div class="desc">Air approximation using c ≈ 331.3 + 0.606·T.</div>
+      <div class="fields">
+        <div class="field full"><label>Air temp T</label><input id="ss_T" type="number" step="any" value="20"><span class="unit">°C</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="ssOut"></div>
+    </div>
+
+    <div class="card span-7" data-calc="sw">
+      <h2>Sound Wavelength</h2>
+      <div class="desc">Convert pitch and sound speed into wavelength — the number that sizes rooms, baffles and absorbers.</div>
+      <div class="fields">
+        <div class="field"><label>Frequency f</label><input id="sw_f" type="number" step="any" value="1000"><span class="unit">Hz</span></div>
+        <div class="field"><label>Sound speed c</label><input id="sw_c" type="number" step="any" value="343"><span class="unit">m/s</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="swOut"></div>
+      <div class="formula"><b>λ = c / f</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ ACOUSTIC ============================ -->
+<section class="pane" id="pane-acoustic">
+  <div class="hero">
+    <div class="hero-text"><h1>Room Acoustics &amp; Noise</h1><p>Reverberation time, absorption, transmission loss and logarithmic source summation.</p></div>
+    <div class="tag">ENGINEERING</div>
+  </div>
+  <div class="grid">
+    <div class="card span-6 accent" data-calc="sab">
+      <h2>Sabine RT60</h2>
+      <div class="desc">Room reverberation estimate from volume and total absorption.</div>
+      <div class="fields">
+        <div class="field"><label>Room volume V</label><input id="sab_V" type="number" step="any" value="150"><span class="unit">m³</span></div>
+        <div class="field"><label>Equiv absorption A</label><input id="sab_A" type="number" step="any" value="30"><span class="unit">sabins</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="sabOut"></div>
+      <div class="formula"><b>RT60 = 0.161 V / A</b> (metric)</div>
+    </div>
+
+    <div class="card span-6" data-calc="ab">
+      <h2>Equivalent Absorption</h2>
+      <div class="desc">Area × absorption coefficient contribution to total absorption.</div>
+      <div class="fields">
+        <div class="field"><label>Surface area S</label><input id="ab_S" type="number" step="any" value="50"><span class="unit">m²</span></div>
+        <div class="field"><label>Absorption α</label><input id="ab_a" type="number" step="any" value="0.25"><span class="unit">0–1</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="abOut"></div>
+      <div class="formula"><b>A = Sα</b> (sabins)</div>
+    </div>
+
+    <div class="card span-6" data-calc="tl">
+      <h2>Transmission Loss</h2>
+      <div class="desc">Mass-law estimate for a simple limp panel — a rough first check only.</div>
+      <div class="fields">
+        <div class="field"><label>Surface mass m′</label><input id="tl_m" type="number" step="any" value="10"><span class="unit">kg/m²</span></div>
+        <div class="field"><label>Frequency f</label><input id="tl_f" type="number" step="any" value="1000"><span class="unit">Hz</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="tlOut"></div>
+      <div class="formula"><b>TL ≈ 20 log₁₀(m′f) − 47</b></div>
+    </div>
+
+    <div class="card span-6" data-calc="bg">
+      <h2>Barrier / Distance Gain</h2>
+      <div class="desc">Simple doubling-distance attenuation in free field.</div>
+      <div class="fields">
+        <div class="field"><label>Initial level</label><input id="bg_l1" type="number" step="any" value="90"><span class="unit">dB</span></div>
+        <div class="field"><label>Initial distance</label><input id="bg_r1" type="number" step="any" value="2"><span class="unit">m</span></div>
+        <div class="field full"><label>New distance</label><input id="bg_r2" type="number" step="any" value="16"><span class="unit">m</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="bgOut"></div>
+    </div>
+
+    <div class="card span-6" data-calc="nc">
+      <h2>Combine Noise Sources</h2>
+      <div class="desc">Logarithmic summation of several independent sound levels.</div>
+      <div class="fields">
+        <div class="field full"><label>Levels in dB (comma separated)</label><input id="nc_levels" type="text" value="60, 65, 70"></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="ncOut"></div>
+      <div class="formula"><b>L = 10 log₁₀ Σ 10^(Lᵢ/10)</b></div>
+    </div>
+
+    <div class="card span-6">
+      <h3>Working in decibels</h3>
+      <div class="note">Two equal sources add to +3 dB, ten equal sources to +10 dB. When levels differ by more than 10 dB, the quieter source is effectively lost in the sum. Removing the loudest machine in a plant therefore rarely yields the improvement intuition suggests — check the numbers here first.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ DOPPLER ============================ -->
+<section class="pane" id="pane-doppler">
+  <div class="hero">
+    <div class="hero-text"><h1>Doppler Effect &amp; Mach Motion</h1><p>Acoustic Doppler shift with moving source and observer, plus Mach number and cone angle.</p></div>
+    <div class="tag">RELATIVE MOTION</div>
+  </div>
+  <div class="grid">
+    <div class="card span-8 accent" data-calc="do">
+      <h2>Doppler Frequency</h2>
+      <div class="desc">Stationary medium. Source and observer speeds are entered as positive magnitudes; the scenario sets the signs.</div>
+      <div class="fields">
+        <div class="field"><label>Original f₀</label><input id="do_f" type="number" step="any" value="500"><span class="unit">Hz</span></div>
+        <div class="field"><label>Sound speed c</label><input id="do_c" type="number" step="any" value="343"><span class="unit">m/s</span></div>
+        <div class="field"><label>Observer speed vₒ</label><input id="do_vo" type="number" step="any" value="20"><span class="unit">m/s</span></div>
+        <div class="field"><label>Source speed vₛ</label><input id="do_vs" type="number" step="any" value="30"><span class="unit">m/s</span></div>
+        <div class="field no-unit full"><label>Scenario</label><select id="do_mode">
+          <option value="toward">Both moving toward each other</option>
+          <option value="sourceAway">Source moving away, observer stationary</option>
+          <option value="observerToward">Observer toward, source stationary</option>
+          <option value="bothAway">Both moving away</option>
+        </select></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="doOut"></div>
+      <div class="formula"><b>f′ = f (c ± vₒ) / (c ∓ vₛ)</b></div>
+    </div>
+
+    <div class="card span-4" data-calc="ma">
+      <h2>Mach Number</h2>
+      <div class="desc">Classify subsonic, transonic, supersonic, and compute the Mach angle when M &gt; 1.</div>
+      <div class="fields">
+        <div class="field"><label>Object speed</label><input id="ma_v" type="number" step="any" value="400"><span class="unit">m/s</span></div>
+        <div class="field"><label>Sound speed</label><input id="ma_c" type="number" step="any" value="343"><span class="unit">m/s</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="maOut"></div>
+      <div class="formula"><b>μ = sin⁻¹(1/M)</b> for M &gt; 1</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FOURIER ============================ -->
+<section class="pane" id="pane-fourier">
+  <div class="hero">
+    <div class="hero-text"><h1>Fourier &amp; Sampled Waves</h1><p>Sampling limits, RMS values, harmonic content, and phase vs group velocity.</p></div>
+    <div class="tag">SIGNALS</div>
+  </div>
+  <div class="grid">
+    <div class="card span-6 accent" data-calc="ny">
+      <h2>Sampling &amp; Nyquist</h2>
+      <div class="desc">Check whether a sampling frequency is sufficient for a maximum signal frequency.</div>
+      <div class="fields">
+        <div class="field"><label>Max signal f_max</label><input id="ny_f" type="number" step="any" value="8000"><span class="unit">Hz</span></div>
+        <div class="field"><label>Sampling f_s</label><input id="ny_fs" type="number" step="any" value="20000"><span class="unit">Hz</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="nyOut"></div>
+      <div class="formula"><b>f_s &gt; 2 f_max</b> (Nyquist criterion)</div>
+    </div>
+
+    <div class="card span-6" data-calc="rm">
+      <h2>RMS &amp; Crest Factor</h2>
+      <div class="desc">For a sinusoidal waveform, calculate RMS and crest factor.</div>
+      <div class="fields">
+        <div class="field"><label>Peak amplitude A</label><input id="rm_A" type="number" step="any" value="2"><span class="unit">arb</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="rmOut"></div>
+      <div class="formula"><b>RMS = A / √2</b> for a sine wave</div>
+    </div>
+
+    <div class="card span-6" data-calc="fh">
+      <h2>Fourier Harmonic Content</h2>
+      <div class="desc">Frequency, RMS contribution and relative level of a selected harmonic.</div>
+      <div class="fields">
+        <div class="field"><label>Fundamental f₀</label><input id="fh_f" type="number" step="any" value="100"><span class="unit">Hz</span></div>
+        <div class="field"><label>Peak amplitude A_n</label><input id="fh_a" type="number" step="any" value="0.5"><span class="unit">arb</span></div>
+        <div class="field full"><label>Harmonic n</label><input id="fh_n" type="number" step="1" value="3"><span class="unit">mode</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="fhOut"></div>
+    </div>
+
+    <div class="card span-6" data-calc="vg">
+      <h2>Phase &amp; Group Velocity</h2>
+      <div class="desc">Phase velocities of two components and the group velocity from Δω/Δk.</div>
+      <div class="fields">
+        <div class="field"><label>Frequency f₁</label><input id="vg_f" type="number" step="any" value="100"><span class="unit">Hz</span></div>
+        <div class="field"><label>Wavelength λ₁</label><input id="vg_l" type="number" step="any" value="2"><span class="unit">m</span></div>
+        <div class="field"><label>Frequency f₂</label><input id="vg_f2" type="number" step="any" value="106"><span class="unit">Hz</span></div>
+        <div class="field"><label>Wavelength λ₂</label><input id="vg_l2" type="number" step="any" value="1.9"><span class="unit">m</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="vgOut"></div>
+      <div class="formula"><b>v_g = Δω/Δk</b></div>
+    </div>
+
+    <div class="card span-6" data-calc="dp">
+      <h2>Dispersion Estimate</h2>
+      <div class="desc">Frequency-dependent velocity change between two wave components.</div>
+      <div class="fields">
+        <div class="field"><label>f₁</label><input id="dp_f1" type="number" step="any" value="100"><span class="unit">Hz</span></div>
+        <div class="field"><label>λ₁</label><input id="dp_l1" type="number" step="any" value="2"><span class="unit">m</span></div>
+        <div class="field"><label>f₂</label><input id="dp_f2" type="number" step="any" value="106"><span class="unit">Hz</span></div>
+        <div class="field"><label>λ₂</label><input id="dp_l2" type="number" step="any" value="1.9"><span class="unit">m</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="dpOut"></div>
+    </div>
+
+    <div class="card span-6">
+      <h3>Gibbs &amp; aliasing</h3>
+      <div class="tip">The Visual Lab’s <b>Fourier synthesis</b> experiment builds square, sawtooth and triangle waves harmonic by harmonic, plots the live spectrum, and numerically reports the Gibbs overshoot (→ ≈ 8.9 % for a square wave). Great for building intuition about bandwidth and ringing.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ ULTRASOUND ============================ -->
+<section class="pane" id="pane-ultrasound">
+  <div class="hero">
+    <div class="hero-text"><h1>Ultrasound</h1><p>Pulse-echo ranging, tissue attenuation, beam geometry and flow measurement.</p></div>
+    <div class="tag">DIAGNOSTIC &amp; NDT</div>
+  </div>
+  <div class="grid">
+    <div class="card span-6 accent" data-calc="upe">
+      <h2>Pulse-Echo Depth</h2>
+      <div class="desc">Range from echo return time, and axial resolution from the pulse length.</div>
+      <div class="fields">
+        <div class="field"><label>Sound speed c</label><input id="upe_c" type="number" step="any" value="1540"><span class="unit">m/s</span></div>
+        <div class="field"><label>Return time t</label><input id="upe_t" type="number" step="any" value="65"><span class="unit">µs</span></div>
+        <div class="field"><label>Frequency f</label><input id="upe_f" type="number" step="any" value="5"><span class="unit">MHz</span></div>
+        <div class="field"><label>Cycles in pulse n</label><input id="upe_n" type="number" step="1" value="3"><span class="unit">—</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="upeOut"></div>
+      <div class="formula"><b>d = c·t/2</b>, axial resolution ≈ nλ/2</div>
+    </div>
+
+    <div class="card span-6" data-calc="att">
+      <h2>Attenuation in Tissue</h2>
+      <div class="desc">Total two-way loss from the attenuation coefficient (≈ 0.5 dB·cm⁻¹·MHz⁻¹ for soft tissue).</div>
+      <div class="fields">
+        <div class="field"><label>Attenuation α</label><input id="att_a" type="number" step="any" value="0.5"><span class="unit">dB/cm/MHz</span></div>
+        <div class="field"><label>Frequency f</label><input id="att_f" type="number" step="any" value="5"><span class="unit">MHz</span></div>
+        <div class="field full"><label>Path depth d</label><input id="att_d" type="number" step="any" value="5"><span class="unit">cm</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="attOut"></div>
+      <div class="formula"><b>loss = 2·α·f·d</b> (round trip)</div>
+    </div>
+
+    <div class="card span-6" data-calc="nf">
+      <h2>Beam Geometry</h2>
+      <div class="desc">Near-field length and divergence of a circular piston transducer.</div>
+      <div class="fields">
+        <div class="field"><label>Crystal diameter D</label><input id="nf_D" type="number" step="any" value="10"><span class="unit">mm</span></div>
+        <div class="field"><label>Frequency f</label><input id="nf_f" type="number" step="any" value="5"><span class="unit">MHz</span></div>
+        <div class="field full"><label>Sound speed c</label><input id="nf_c" type="number" step="any" value="1540"><span class="unit">m/s</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="nfOut"></div>
+      <div class="formula"><b>N = D²/4λ</b>, sinθ ≈ 1.22 λ/D</div>
+    </div>
+
+    <div class="card span-6" data-calc="ud">
+      <h2>Doppler Ultrasound</h2>
+      <div class="desc">Frequency shift from blood (or reflector) motion at an insonation angle.</div>
+      <div class="fields">
+        <div class="field"><label>Probe frequency f₀</label><input id="ud_f" type="number" step="any" value="2"><span class="unit">MHz</span></div>
+        <div class="field"><label>Flow velocity v</label><input id="ud_v" type="number" step="any" value="0.5"><span class="unit">m/s</span></div>
+        <div class="field"><label>Insonation angle θ</label><input id="ud_th" type="number" step="any" value="60"><span class="unit">deg</span></div>
+        <div class="field full"><label>Sound speed c</label><input id="ud_c" type="number" step="any" value="1540"><span class="unit">m/s</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="udOut"></div>
+      <div class="formula"><b>f_d = 2 f₀ v cosθ / c</b></div>
+    </div>
+
+    <div class="card span-12">
+      <h3>Typical operating points</h3>
+      <div class="note">Diagnostic imaging: 1–20 MHz (higher frequency → better resolution, more attenuation, shallower depth). NDT: 0.5–15 MHz with couplant. Soft tissue c ≈ 1540 m/s is the standard assumed value; the near field (Fresnel zone) collimates the beam, while beyond it the beam diverges at roughly sinθ ≈ 1.22 λ/D.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ WAVEGUIDES ============================ -->
+<section class="pane" id="pane-waveguides">
+  <div class="hero">
+    <div class="hero-text"><h1>Waveguides</h1><p>Cutoff frequencies, guided wavelength and dispersion for rectangular and circular guides.</p></div>
+    <div class="tag">GUIDED WAVES</div>
+  </div>
+  <div class="grid">
+    <div class="card span-7 accent" data-calc="rg">
+      <h2>Rectangular Waveguide</h2>
+      <div class="desc">TE/TM cutoff for mode (m,n) with sides a × b, plus guided wavelength at the operating frequency. Defaults are WR-90 (X-band).</div>
+      <div class="fields">
+        <div class="field"><label>Broad wall a</label><input id="rg_a" type="number" step="any" value="22.86"><span class="unit">mm</span></div>
+        <div class="field"><label>Narrow wall b</label><input id="rg_b" type="number" step="any" value="10.16"><span class="unit">mm</span></div>
+        <div class="field"><label>Mode index m</label><input id="rg_m" type="number" step="1" value="1"><span class="unit">—</span></div>
+        <div class="field"><label>Mode index n</label><input id="rg_n" type="number" step="1" value="0"><span class="unit">—</span></div>
+        <div class="field full"><label>Operating frequency f</label><input id="rg_f" type="number" step="any" value="10"><span class="unit">GHz</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="rgOut"></div>
+      <div class="formula"><b>fc = (c/2)·√((m/a)² + (n/b)²)</b>, λg = λ₀/√(1−(fc/f)²)</div>
+    </div>
+
+    <div class="card span-5" data-calc="cg">
+      <h2>Circular Waveguide</h2>
+      <div class="desc">Dominant TE₁₁ and TM₀₁ cutoff frequencies from the radius (c = 299 792 458 m/s in air-filled guide).</div>
+      <div class="fields">
+        <div class="field full"><label>Guide radius r</label><input id="cg_r" type="number" step="any" value="30"><span class="unit">mm</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="cgOut"></div>
+      <div class="formula"><b>fc(TE₁₁) = 1.841·c / 2πr</b></div>
+    </div>
+
+    <div class="card span-6" data-calc="gw">
+      <h2>Guided Wavelength</h2>
+      <div class="desc">From free-space frequency and a known cutoff frequency.</div>
+      <div class="fields">
+        <div class="field"><label>Operating f</label><input id="gw_f" type="number" step="any" value="10"><span class="unit">GHz</span></div>
+        <div class="field"><label>Cutoff fc</label><input id="gw_fc" type="number" step="any" value="6.6"><span class="unit">GHz</span></div>
+      </div>
+      <div class="actions"><button class="btn primary">Calculate</button></div>
+      <div class="results" id="gwOut"></div>
+      <div class="formula"><b>λg = λ₀ / √(1 − (fc/f)²)</b></div>
+    </div>
+
+    <div class="card span-6">
+      <h3>Dispersion in guides</h3>
+      <div class="note">Below cutoff the mode is evanescent and decays exponentially. Above cutoff, phase velocity always exceeds c while group velocity is always below c, with <b>vp·vg = c²</b>. Single-mode operation requires f between the dominant and next-higher cutoff — for a rectangular guide that is a band of roughly one octave (TE₁₀ to TE₂₀/TE₀₁).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ VISUAL LAB ============================ -->
+<section class="pane" id="pane-lab">
+  <div class="hero">
+    <div class="hero-text">
+      <h1>Visual Lab</h1>
+      <p>Six live experiments on one shared engine. Every slider writes straight into the simulation state and the canvas re-renders immediately — even while paused.</p>
+    </div>
+    <div class="tag">CANVAS · LIVE · ZERO DEPS</div>
+  </div>
+
+  <div class="lab-shell">
+    <div class="lab-top">
+      <div class="lab-modes" id="labModes" aria-label="Experiments"></div>
+      <div class="lab-transport">
+        <button class="lab-btn" id="labPlay" title="Play / pause (Space)" aria-label="Play or pause"></button>
+        <button class="lab-btn" id="labReset" title="Reset experiment" aria-label="Reset">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.2 6.5A4.7 4.7 0 1 1 9.3 2.8"/><path d="M11.4 1.2v2.6H8.8"/></svg>
+        </button>
+        <label class="lab-speed">speed
+          <input type="range" id="labSpeed" min="0.1" max="3" step="0.05" value="1">
+          <span id="labSpeedVal">1.00×</span>
+        </label>
+      </div>
+    </div>
+    <div class="lab-hint" id="labCaption"></div>
+    <div class="lab-stage" id="labStage">
+      <canvas id="labCanvas"></canvas>
+      <div class="lab-readouts" id="labReadouts"></div>
+    </div>
+    <div class="lab-controls" id="labControls"></div>
+  </div>
+
+  <div class="note" style="margin-top:12px">Hover (or drag on touch) across the stage in the 1-D experiments to probe exact values at the cursor. The Doppler experiment loops automatically when the source leaves the frame; push Mach above 1 to see the shock cone form. In the standing-wave experiment, sweep R from −1 to +1 to go from a pure standing wave to a pure traveling wave.</div>
+</section>
+
+<!-- ============================ REFERENCE ============================ -->
+<section class="pane" id="pane-reference">
+  <div class="hero">
+    <div class="hero-text"><h1>Reference</h1><p>Constants, material data and formula summary. Typical handbook values — verify against certified data before design use.</p></div>
+    <div class="tag">LOOKUP</div>
+  </div>
+  <div class="grid">
+    <div class="card span-7">
+      <h2>Physical Constants</h2>
+      <div class="table-scroll"><table>
+        <thead><tr><th class="l" style="text-align:left">Quantity</th><th>Symbol</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td class="l">Speed of sound, air 20 °C</td><td>c</td><td>343 m/s</td></tr>
+          <tr><td class="l">Speed of sound, fresh water</td><td>c</td><td>1481 m/s</td></tr>
+          <tr><td class="l">Reference sound pressure</td><td>p₀</td><td>20 µPa</td></tr>
+          <tr><td class="l">Reference intensity</td><td>I₀</td><td>10⁻¹² W/m²</td></tr>
+          <tr><td class="l">Air density, 20 °C</td><td>ρ</td><td>1.20 kg/m³</td></tr>
+          <tr><td class="l">Air characteristic impedance</td><td>Z₀</td><td>413 Rayl</td></tr>
+          <tr><td class="l">Audible range (young adult)</td><td>—</td><td>20 Hz – 20 kHz</td></tr>
+          <tr><td class="l">Threshold of pain</td><td>—</td><td>≈ 120–130 dB SPL</td></tr>
+          <tr><td class="l">Speed of light in vacuum</td><td>c₀</td><td>299 792 458 m/s</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="card span-5">
+      <h2>Sound Speed &amp; Impedance</h2>
+      <div class="table-scroll"><table>
+        <thead><tr><th class="l" style="text-align:left">Medium</th><th>c (m/s)</th><th>ρ (kg/m³)</th><th>Z (MRayl)</th></tr></thead>
+        <tbody>
+          <tr><td class="l">Air (20 °C)</td><td>343</td><td>1.20</td><td>0.0004</td></tr>
+          <tr><td class="l">Fresh water</td><td>1481</td><td>998</td><td>1.48</td></tr>
+          <tr><td class="l">Seawater</td><td>1530</td><td>1026</td><td>1.57</td></tr>
+          <tr><td class="l">Body fat</td><td>1450</td><td>950</td><td>1.38</td></tr>
+          <tr><td class="l">Soft tissue (avg)</td><td>1540</td><td>1000</td><td>1.54</td></tr>
+          <tr><td class="l">Muscle</td><td>1580</td><td>1070</td><td>1.70</td></tr>
+          <tr><td class="l">Bone (cortical)</td><td>≈4000</td><td>1900</td><td>7.6</td></tr>
+          <tr><td class="l">Aluminium</td><td>6320</td><td>2700</td><td>17.0</td></tr>
+          <tr><td class="l">Steel (longitudinal)</td><td>5960</td><td>7850</td><td>46.7</td></tr>
+          <tr><td class="l">Glass (plate)</td><td>≈5100</td><td>2500</td><td>≈12.8</td></tr>
+          <tr><td class="l">Pine (along grain)</td><td>3500</td><td>450</td><td>1.6</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="card span-5">
+      <h2>Absorption Coefficients <small>typical</small></h2>
+      <div class="table-scroll"><table>
+        <thead><tr><th class="l" style="text-align:left">Material</th><th>α @ 500 Hz</th><th>α @ 2 kHz</th></tr></thead>
+        <tbody>
+          <tr><td class="l">Concrete / brick</td><td>0.02</td><td>0.03</td></tr>
+          <tr><td class="l">Glazed tile</td><td>0.01</td><td>0.02</td></tr>
+          <tr><td class="l">Glass (window)</td><td>0.03</td><td>0.04</td></tr>
+          <tr><td class="l">Gypsum board on studs</td><td>0.05</td><td>0.08</td></tr>
+          <tr><td class="l">Wood paneling</td><td>0.10</td><td>0.10</td></tr>
+          <tr><td class="l">Carpet, thin on concrete</td><td>0.05</td><td>0.20</td></tr>
+          <tr><td class="l">Carpet, thick on pad</td><td>0.25</td><td>0.55</td></tr>
+          <tr><td class="l">Heavy draped curtains</td><td>0.55</td><td>0.70</td></tr>
+          <tr><td class="l">Acoustic ceiling tile</td><td>0.60</td><td>0.70</td></tr>
+          <tr><td class="l">Seated audience (per m²)</td><td>≈0.8</td><td>≈0.85</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note">Handbook mid-band values, ±20 % typical. Always check manufacturer test data for real designs.</div>
+    </div>
+
+    <div class="card span-7">
+      <h2>Formula Summary</h2>
+      <div class="table-scroll"><table>
+        <tbody>
+          <tr><td class="l">Wave speed</td><td class="eq">v = fλ</td></tr>
+          <tr><td class="l">Harmonic wave</td><td class="eq">y = A sin(kx − ωt + φ)</td></tr>
+          <tr><td class="l">SHM</td><td class="eq">ω = √(k/m), T = 2π/ω</td></tr>
+          <tr><td class="l">Superposition</td><td class="eq">Aᵣ² = A₁² + A₂² + 2A₁A₂cosφ</td></tr>
+          <tr><td class="l">String modes</td><td class="eq">f_n = (n/2L)√(T/μ)</td></tr>
+          <tr><td class="l">Open pipe / closed pipe</td><td class="eq">f_n = nc/2L · f_n = (2n−1)c/4L</td></tr>
+          <tr><td class="l">Reflection / transmission</td><td class="eq">r = (Z₂−Z₁)/(Z₂+Z₁), τ = 4Z₁Z₂/(Z₁+Z₂)²</td></tr>
+          <tr><td class="l">Doppler</td><td class="eq">f′ = f(c ± vₒ)/(c ∓ vₛ)</td></tr>
+          <tr><td class="l">Mach angle</td><td class="eq">μ = sin⁻¹(1/M)</td></tr>
+          <tr><td class="l">SPL / SIL</td><td class="eq">L_p = 20log₁₀(p/p₀) · L_I = 10log₁₀(I/I₀)</td></tr>
+          <tr><td class="l">Reverberation</td><td class="eq">RT60 = 0.161 V / A</td></tr>
+          <tr><td class="l">Mass law</td><td class="eq">TL ≈ 20log₁₀(m′f) − 47</td></tr>
+          <tr><td class="l">Air sound speed</td><td class="eq">c ≈ 331.3 + 0.606·T(°C)</td></tr>
+          <tr><td class="l">Quality factor</td><td class="eq">Q = f₀/Δf</td></tr>
+          <tr><td class="l">Nyquist</td><td class="eq">f_s &gt; 2 f_max</td></tr>
+          <tr><td class="l">Doppler ultrasound</td><td class="eq">f_d = 2f₀v cosθ/c</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="card span-12">
+      <h2>Everyday Level Scale <small>dB SPL</small></h2>
+      <div class="note">0 hearing threshold · 30 whisper / quiet library · 60 conversation · 85 busy traffic (8-h damage risk) · 100 nightclub · 120 front row at concert · 130 threshold of pain · 140 jet engine at 30 m. Levels add logarithmically — use the Room Acoustics combiner.</div>
+    </div>
+  </div>
+</section>
+
+</div>
+<div class="footer">AZNUR WAVES — runs entirely in your browser · no network calls, no analytics, your numbers never leave the device</div>
+</main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* ============================================================
+   Helpers
+   ============================================================ */
+const byId = id => document.getElementById(id);
+const D2R = Math.PI/180;
+const SUP = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+
+function fmt(x, sig=4){
+  if(x===null || x===undefined || !isFinite(x)) return '—';
+  if(x===0) return '0';
+  const a = Math.abs(x);
+  if(a>=1e6 || a<1e-3){
+    const [m,e] = x.toExponential(2).split('e');
+    const sign = e.startsWith('-') ? '⁻' : '';
+    const digits = e.replace(/[+-]/,'').split('').map(d=>SUP[d]).join('');
+    return m + '×10' + sign + digits;
+  }
+  return String(Number(x.toPrecision(sig)));
+}
+const pct = x => fmt(100*x) + '%';
+const ok  = (...xs) => xs.every(x => typeof x==='number' && isFinite(x));
+const st  = (k,v,u,cls) => ({k, v:String(v), u, cls});
+
+function render(out, rows){
+  byId(out).innerHTML = rows.map(r =>
+    `<div class="stat${r.cls ? ' '+r.cls : ''}"><div class="k">${r.k}</div><div class="v">${r.v}${r.u ? '<span class="u"> '+r.u+'</span>' : ''}</div></div>`
+  ).join('');
+}
+
+/* ============================================================
+   Calculators — every card recalculates live on input
+   ============================================================ */
+const CALCS = {};
+
+CALCS.home = {i:['home_v','home_f'], out:'homeOut', fn(n){
+  if(!ok(n[0],n[1]) || n[0]<=0 || n[1]<=0) return [];
+  return [st('Wavelength λ', fmt(n[0]/n[1]),'m','hot'),
+          st('Period T', fmt(1/n[1]),'s'),
+          st('Angular freq ω', fmt(2*Math.PI*n[1]),'rad/s')];
+}};
+
+CALCS.homeSPL = {i:['home_p'], out:'homeSPLOut', fn(n){
+  if(!ok(n[0]) || n[0]<=0) return [];
+  return [st('Sound pressure level', fmt(20*Math.log10(n[0]/2e-5)),'dB SPL','hot'),
+          st('Pressure', fmt(n[0]*1e6),'µPa')];
+}};
+
+CALCS.wv = {i:['wv_v','wv_f','wv_l'], out:'wvOut', fn(n, r){
+  const miss = r.map((s,i)=> s==='' || n[i]===0);
+  const c = miss.filter(Boolean).length;
+  if(c===0){
+    const off = Math.abs(n[0]-n[1]*n[2]) / Math.max(Math.abs(n[0]),1e-9);
+    return [st('Speed v', fmt(n[0]),'m/s'), st('Frequency f', fmt(n[1]),'Hz'),
+            st('Wavelength λ', fmt(n[2]),'m'),
+            st('Check v = fλ', off<0.01 ? 'consistent' : 'off by '+pct(off), '', off<0.01?'good':'bad')];
+  }
+  if(c>1) return [st('Solver','leave exactly one field blank','','bad')];
+  if(miss[2] && n[0]>0 && n[1]>0)
+    return [st('Wavelength λ', fmt(n[0]/n[1]),'m','hot'), st('Period T', fmt(1/n[1]),'s'),
+            st('Wave number k', fmt(2*Math.PI*n[1]/n[0]),'rad/m')];
+  if(miss[1] && n[0]>0 && n[2]>0)
+    return [st('Frequency f', fmt(n[0]/n[2]),'Hz','hot'), st('Period T', fmt(n[2]/n[0]),'s'),
+            st('Angular freq ω', fmt(2*Math.PI*n[0]/n[2]),'rad/s')];
+  if(miss[0] && n[1]>0 && n[2]>0)
+    return [st('Speed v', fmt(n[1]*n[2]),'m/s','hot'), st('Period T', fmt(1/n[1]),'s'),
+            st('Wave number k', fmt(2*Math.PI/n[2]),'rad/m')];
+  return [st('Solver','check the two known values','','bad')];
+}};
+
+CALCS.wp = {i:['wp_f','wp_l','wp_v','wp_x','wp_t','wp_A'], out:'wpOut', fn(n){
+  if(!ok(...n) || n[0]<=0 || n[1]<=0 || n[2]<=0) return [];
+  const [f,l,v,x,t,A] = n;
+  const w = 2*Math.PI*f, k = 2*Math.PI/l;
+  const y = A*Math.sin(k*x - w*t);
+  const rel = Math.abs(f*l - v)/Math.abs(v);
+  return [st('y(x,t)', fmt(y),'m','hot'), st('Period T', fmt(1/f),'s'),
+          st('Angular freq ω', fmt(w),'rad/s'), st('Wave number k', fmt(k),'rad/m'),
+          st('Check fλ vs v', rel<0.02 ? 'consistent' : 'off by '+pct(rel), '', rel<0.02?'good':'bad')];
+}};
+
+CALCS.sh = {i:['sh_A','sh_m','sh_k'], out:'shOut', fn(n){
+  if(!ok(...n) || n[1]<=0 || n[2]<=0 || n[0]<0) return [];
+  const [A,m,k] = n;
+  const w = Math.sqrt(k/m);
+  return [st('Angular freq ω', fmt(w),'rad/s','hot'), st('Frequency f', fmt(w/(2*Math.PI)),'Hz'),
+          st('Period T', fmt(2*Math.PI/w),'s'), st('Max speed', fmt(w*A),'m/s'),
+          st('Max accel', fmt(w*w*A),'m/s²'), st('Total energy E', fmt(0.5*k*A*A),'J')];
+}};
+
+CALCS.wi = {i:['wi_P','wi_S','wi_rho','wi_c','wi_u'], out:'wiOut', fn(n){
+  if(!ok(n[0],n[1]) || n[1]<=0) return [];
+  const [P,S,rho,c,u] = n;
+  const I = P/S;
+  const rows = [st('Intensity I = P/S', fmt(I),'W/m²','hot'),
+                st('Intensity level', I>0 ? fmt(10*Math.log10(I/1e-12)) : '—','dB')];
+  if(ok(rho,c,u) && rho>0 && c>0 && u>=0)
+    rows.push(st('Plane wave ½ρcu₀²', fmt(0.5*rho*c*u*u),'W/m²'));
+  return rows;
+}};
+
+CALCS.ph = {i:['ph_dx','ph_l','ph_p0'], out:'phOut', fn(n){
+  if(!ok(...n) || n[1]<=0) return [];
+  const [dx,l,p0] = n;
+  const m = dx/l;
+  const dph = 2*Math.PI*m + p0*D2R;
+  const fr = Math.abs(m - Math.round(m));
+  let cond, cls;
+  if(fr<0.04){ cond = 'Constructive (order '+Math.round(m)+')'; cls='good'; }
+  else if(Math.abs(fr-0.5)<0.04){ cond = 'Destructive (order '+Math.round(m-0.5)+')'; cls='bad'; }
+  else { cond = 'Intermediate'; cls=''; }
+  return [st('Phase difference Δφ', fmt(dph),'rad','hot'),
+          st('Δφ', fmt(((dph/D2R)%360+360)%360),'deg'),
+          st('Path in wavelengths', fmt(m),'λ'),
+          st('Condition', cond,'',cls)];
+}};
+
+CALCS.su = {i:['su_a1','su_a2','su_phi'], out:'suOut', fn(n){
+  if(!ok(...n) || n[0]<=0 || n[1]<=0) return [];
+  const [a1,a2,phi] = n; const ph = phi*D2R;
+  const Ar = Math.sqrt(a1*a1 + a2*a2 + 2*a1*a2*Math.cos(ph));
+  const th = Math.atan2(a2*Math.sin(ph), a1 + a2*Math.cos(ph))/D2R;
+  return [st('Resultant amplitude Aᵣ', fmt(Ar),'','hot'),
+          st('Resultant phase', fmt(th),'deg'),
+          st('Level vs A₁', fmt(20*Math.log10(Ar/a1)),'dB'),
+          st('Peak possible A₁+A₂', fmt(a1+a2),'')];
+}};
+
+CALCS.ic = {i:['ic_dx','ic_l'], out:'icOut', fn(n){
+  if(!ok(...n) || n[1]<=0) return [];
+  const [dx,l] = n; const m = dx/l;
+  const fr = Math.abs(m - Math.round(m));
+  let cond, cls;
+  if(fr<0.02){ cond='Constructive'; cls='good'; }
+  else if(Math.abs(fr-0.5)<0.02){ cond='Destructive'; cls='bad'; }
+  else { cond='Partial — between 0 and max'; cls=''; }
+  return [st('Path in wavelengths', fmt(m),'λ','hot'),
+          st('Condition', cond,'',cls),
+          st('Nearest constructive Δx', fmt(Math.round(m)*l),'m'),
+          st('Nearest destructive Δx', fmt((Math.round(m-0.5)+0.5)*l),'m')];
+}};
+
+CALCS.bt = {i:['bt_f1','bt_f2'], out:'btOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const df = Math.abs(n[0]-n[1]);
+  const rows = [st('Beat frequency', fmt(df),'Hz','hot')];
+  if(df>0) rows.push(st('Beat period', fmt(1/df),'s'));
+  rows.push(st('Carrier (average f)', fmt((n[0]+n[1])/2),'Hz'));
+  rows.push(st('Perception', df<=10 ? 'distinct beats' : df<=30 ? 'roughness zone' : 'two separate tones'));
+  return rows;
+}};
+
+CALCS.tr = {i:['tr_a1','tr_a2','tr_p2','tr_a3','tr_p3'], out:'trOut', fn(n){
+  if(!ok(...n) || n[0]<=0 || n[1]<=0 || n[3]<=0) return [];
+  const [a1,a2,p2,a3,p3] = n;
+  const X = a1 + a2*Math.cos(p2*D2R) + a3*Math.cos(p3*D2R);
+  const Y = a2*Math.sin(p2*D2R) + a3*Math.sin(p3*D2R);
+  const Ar = Math.hypot(X,Y);
+  return [st('Resultant amplitude', fmt(Ar),'','hot'),
+          st('Resultant phase', fmt(Math.atan2(Y,X)/D2R),'deg'),
+          st('Sum of amplitudes', fmt(a1+a2+a3),''),
+          st('Aᵣ²', fmt(Ar*Ar),'')];
+}};
+
+CALCS.fv = {i:['fv_i1','fv_i2'], out:'fvOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<0)) return [];
+  const mx = (Math.sqrt(n[0])+Math.sqrt(n[1]))**2;
+  const mn = (Math.sqrt(n[0])-Math.sqrt(n[1]))**2;
+  return [st('Visibility V', fmt((mx-mn)/(mx+mn)),'','hot'),
+          st('I max', fmt(mx),''), st('I min', fmt(mn),'')];
+}};
+
+CALCS.st = {i:['st_L','st_T','st_mu','st_n'], out:'stOut', fn(n){
+  if(!ok(...n) || n[0]<=0 || n[1]<0 || n[2]<=0) return [];
+  const [L,T,mu,nn] = n;
+  if(nn<1 || nn!==Math.round(nn)) return [st('Harmonic n','use an integer ≥ 1','','bad')];
+  const v = Math.sqrt(T/mu), f1 = v/(2*L);
+  return [st('Wave speed v', fmt(v),'m/s','hot'),
+          st('Fundamental f₁', fmt(f1),'Hz'),
+          st('Mode f('+nn+')', fmt(nn*f1),'Hz','hot'),
+          st('Wavelength λ'+nn, fmt(2*L/nn),'m'),
+          st('Nodes / antinodes', (nn+1)+' / '+nn,'')];
+}};
+
+CALCS.pp = {i:['pp_L','pp_c','pp_n'], s:['pp_type'], out:'ppOut', fn(n, r, s){
+  if(!ok(...n) || n[0]<=0 || n[1]<=0) return [];
+  const [L,c,nn] = n; const closed = s[0]==='closed';
+  if(nn<1 || nn!==Math.round(nn)) return [st('Mode n','use an integer ≥ 1','','bad')];
+  const f1 = closed ? c/(4*L) : c/(2*L);
+  const fn = closed ? (2*nn-1)*f1 : nn*f1;
+  return [st('Fundamental f₁', fmt(f1),'Hz','hot'),
+          st('Mode '+nn+' frequency', fmt(fn),'Hz','hot'),
+          st('Wavelength', fmt(closed ? 4*L/(2*nn-1) : 2*L/nn),'m'),
+          st('Supported harmonics', closed ? 'odd only (1,3,5…)' : 'all (1,2,3…)')];
+}};
+
+CALCS.na = {i:['na_L','na_n'], out:'naOut', fn(n){
+  if(!ok(...n) || n[0]<=0) return [];
+  const [L,nn] = n;
+  if(nn<1 || nn!==Math.round(nn)) return [st('Mode n','use an integer ≥ 1','','bad')];
+  const nodes = Array.from({length:nn+1},(_,i)=>fmt(i*L/nn));
+  const anti  = Array.from({length:nn},(_,i)=>fmt((i+0.5)*L/nn));
+  return [st('Nodes (n+1)', nn+1,''), st('Antinodes (n)', nn,''),
+          st('Node spacing', fmt(L/nn),'m'),
+          {k:'Node positions', v:nodes.join('  ·  '), u:'m', cls:'wide'},
+          {k:'Antinode positions', v:anti.join('  ·  '), u:'m', cls:'wide'}];
+}};
+
+CALCS.q = {i:['q_f0','q_bw'], out:'qOut', fn(n){
+  if(!ok(...n) || n[0]<=0 || n[1]<=0) return [];
+  const Q = n[0]/n[1];
+  return [st('Quality factor Q', fmt(Q),'','hot'),
+          st('Damping ratio ζ', fmt(1/(2*Q)),''),
+          st('Ring-down cycles ≈ Q/π', fmt(Q/Math.PI),''),
+          st('Character', Q<0.5 ? 'overdamped — no resonance peak' : Q<3 ? 'broad resonance' : 'sharp resonance')];
+}};
+
+CALCS.we = {i:['we_rho','we_f','we_a'], out:'weOut', fn(n){
+  if(!ok(...n) || n[0]<=0 || n[1]<=0) return [];
+  const w = 2*Math.PI*n[1];
+  return [st('Angular freq ω', fmt(w),'rad/s','hot'),
+          st('Energy density ū', fmt(0.5*n[0]*w*w*n[2]*n[2]),'J/m³','hot')];
+}};
+
+CALCS.rc = {i:['rc_z1','rc_z2'], out:'rcOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const [z1,z2] = n;
+  const r = (z2-z1)/(z2+z1), R = r*r;
+  return [st('Amplitude coeff r', fmt(r),'','hot'),
+          st('Power reflection R', pct(R),'', R>0.5?'bad':''),
+          st('Power transmission τ', pct(1-R),'','good'),
+          st('Reflected phase', r>=0 ? '0° (no inversion)' : '180° (inverted)')];
+}};
+
+CALCS.sn = {i:['sn_c1','sn_c2','sn_th'], out:'snOut', fn(n){
+  if(!ok(...n) || n[0]<=0 || n[1]<=0) return [];
+  const [c1,c2,th] = n;
+  const s2 = (c2/c1)*Math.sin(th*D2R);
+  if(Math.abs(s2)<=1){
+    return [st('Refracted angle θ₂', fmt(Math.asin(s2)/D2R),'deg','hot'),
+            st('Speed ratio c₂/c₁', fmt(c2/c1),''),
+            st('Ray bends', c2>c1 ? 'away from normal' : 'toward normal')];
+  }
+  return [st('Refracted angle θ₂','total internal reflection','','bad'),
+          st('Required sin θ₂', fmt(s2),'> 1')];
+}};
+
+CALCS.az = {i:['az_rho','az_c'], out:'azOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const Z = n[0]*n[1], Zair = 413;
+  const R = ((Z-Zair)/(Z+Zair))**2;
+  return [Z>=1e6 ? st('Characteristic impedance Z', fmt(Z/1e6),'MRayl','hot')
+                 : st('Characteristic impedance Z', fmt(Z),'Rayl','hot'),
+          st('vs air (413 Rayl)', fmt(Z/Zair),'×'),
+          st('Reflection at air interface', pct(R),'')];
+}};
+
+CALCS.tc = {i:['tc_z1','tc_z2'], out:'tcOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const [z1,z2] = n;
+  const t = 4*z1*z2/((z1+z2)**2);
+  return [st('Transmission coeff τ', pct(t),'','good'),
+          st('Transmission loss', fmt(-10*Math.log10(t)),'dB','hot'),
+          st('Reflection loss', pct(1-t),'')];
+}};
+
+CALCS.ca = {i:['ca_c1','ca_c2'], out:'caOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const [c1,c2] = n;
+  if(c2>c1) return [st('Critical angle θc', fmt(Math.asin(c1/c2)/D2R),'deg','hot'),
+                    st('Beyond θc','total internal reflection')];
+  return [st('Critical angle','none — needs c₂ > c₁','','bad')];
+}};
+
+CALCS.spl = {i:['spl_p'], out:'splOut', fn(n){
+  if(!ok(n[0]) || n[0]<=0) return [];
+  return [st('SPL', fmt(20*Math.log10(n[0]/2e-5)),'dB','hot'),
+          st('Pressure', fmt(n[0]*1e6),'µPa')];
+}};
+
+CALCS.sil = {i:['sil_i'], out:'silOut', fn(n){
+  if(!ok(n[0]) || n[0]<=0) return [];
+  return [st('Intensity level', fmt(10*Math.log10(n[0]/1e-12)),'dB','hot'),
+          st('Equiv. plane-wave p', fmt(Math.sqrt(n[0]*413)),'Pa')];
+}};
+
+CALCS.sd = {i:['sd_l1','sd_r1','sd_r2'], out:'sdOut', fn(n){
+  if(!ok(...n) || n[1]<=0 || n[2]<=0) return [];
+  const dl = -20*Math.log10(n[2]/n[1]);
+  return [st('Level at r₂', fmt(n[0]+dl),'dB','hot'),
+          st('Change ΔL', fmt(dl),'dB'),
+          st('Distance ratio', fmt(n[2]/n[1]),'×')];
+}};
+
+CALCS.sp = {i:['sp_W','sp_r'], out:'spOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const I = n[0]/(4*Math.PI*n[1]*n[1]);
+  return [st('Sound power level Lw', fmt(10*Math.log10(n[0]/1e-12)),'dB'),
+          st('SPL at r (free field)', fmt(10*Math.log10(I/1e-12)),'dB','hot'),
+          st('Intensity at r', fmt(I),'W/m²')];
+}};
+
+CALCS.ss = {i:['ss_T'], out:'ssOut', fn(n){
+  if(!ok(n[0])) return [];
+  const c = 331.3 + 0.606*n[0];
+  return [st('Speed of sound', fmt(c),'m/s','hot'),
+          st('λ at 1 kHz', fmt(c/1000),'m'),
+          st('Gradient', fmt(0.606),'m/s per °C')];
+}};
+
+CALCS.sw = {i:['sw_f','sw_c'], out:'swOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  return [st('Wavelength λ', fmt(n[1]/n[0]),'m','hot'),
+          st('λ in cm', fmt(100*n[1]/n[0]),'cm'),
+          st('Period T', fmt(1/n[0]),'s')];
+}};
+
+CALCS.sab = {i:['sab_V','sab_A'], out:'sabOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const rt = 0.161*n[0]/n[1];
+  const zone = rt<0.3 ? 'very dead / studio' : rt<0.8 ? 'speech & control rooms'
+             : rt<1.5 ? 'lecture / drama' : rt<2.5 ? 'concert halls' : 'large church / cathedral';
+  return [st('RT60', fmt(rt),'s','hot'),
+          st('Typical use', zone,'', rt>=0.2 && rt<=4 ? '':'bad'),
+          st('A needed for 0.8 s', fmt(0.161*n[0]/0.8),'sabins')];
+}};
+
+CALCS.ab = {i:['ab_S','ab_a'], out:'abOut', fn(n){
+  if(!ok(...n) || n[0]<=0) return [];
+  if(n[1]<0 || n[1]>1) return [st('α','must be between 0 and 1','','bad')];
+  return [st('Absorption A = Sα', fmt(n[0]*n[1]),'sabins','hot'),
+          st('Reflected energy', pct(1-n[1]),'')];
+}};
+
+CALCS.tl = {i:['tl_m','tl_f'], out:'tlOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const TL = 20*Math.log10(n[0]*n[1]) - 47;
+  return [st('Transmission loss', fmt(TL),'dB','hot'),
+          st('Transmitted fraction', pct(Math.pow(10,-TL/10)),''),
+          st('Model','mass-law region','')];
+}};
+
+CALCS.bg = {i:['bg_l1','bg_r1','bg_r2'], out:'bgOut', fn(n){
+  if(!ok(...n) || n[1]<=0 || n[2]<=0) return [];
+  const dl = -20*Math.log10(n[2]/n[1]);
+  return [st('Level at new distance', fmt(n[0]+dl),'dB','hot'),
+          st('Change ΔL', fmt(dl),'dB'),
+          st('Distance ratio', fmt(n[2]/n[1]),'×')];
+}};
+
+CALCS.nc = {i:['nc_levels'], out:'ncOut', fn(n, r){
+  const list = r[0].split(/[\s,;]+/).map(Number).filter(x=>isFinite(x));
+  if(!list.length) return [];
+  const total = 10*Math.log10(list.reduce((s,l)=>s+Math.pow(10,l/10),0));
+  const loudest = Math.max(...list);
+  return [st('Combined level', fmt(total),'dB','hot'),
+          st('Loudest source', fmt(loudest),'dB'),
+          st('Sources', list.length,''),
+          st('Total − loudest', fmt(total-loudest),'dB')];
+}};
+
+CALCS.do = {i:['do_f','do_c','do_vo','do_vs'], s:['do_mode'], out:'doOut', fn(n, r, s){
+  const [f,c,vo,vs] = n; const mode = s[0];
+  if(!ok(f,c) || c<=0 || f<=0) return [];
+  if(!ok(vo,vs)) return [st('Velocities','enter observer and source speeds','','bad')];
+  let fp;
+  if(mode==='toward'){
+    if(c+vo<=0 || c-vs<=0) return [st('Regime','source at/above sound speed — no steady tone ahead','','bad')];
+    fp = f*(c+vo)/(c-vs);
+  } else if(mode==='sourceAway'){
+    if(c+vs<=0) return [st('Regime','invalid: c + vₛ ≤ 0','','bad')];
+    fp = f*c/(c+vs);
+  } else if(mode==='observerToward'){
+    if(c+vo<=0) return [st('Regime','invalid: c + vₒ ≤ 0','','bad')];
+    fp = f*(c+vo)/c;
+  } else {
+    if(c-vo<=0 || c+vs<=0) return [st('Regime','invalid speed combination','','bad')];
+    fp = f*(c-vo)/(c+vs);
+  }
+  return [st('Observed frequency f′', fmt(fp),'Hz','hot'),
+          st('Frequency shift', fmt(fp-f),'Hz'),
+          st('Percent change', fmt(100*(fp/f-1)),'%')];
+}};
+
+CALCS.ma = {i:['ma_v','ma_c'], out:'maOut', fn(n){
+  if(!ok(...n) || n[1]<=0 || n[0]<0) return [];
+  const M = n[0]/n[1];
+  const reg = M<0.8 ? 'subsonic' : M<1.2 ? 'transonic' : 'supersonic';
+  const rows = [st('Mach number', fmt(M),'','hot'), st('Regime', reg)];
+  if(M>1) rows.push(st('Mach cone half-angle', fmt(Math.asin(1/M)/D2R),'deg'));
+  else rows.push(st('Mach cone','requires M > 1'));
+  return rows;
+}};
+
+CALCS.ny = {i:['ny_f','ny_fs'], out:'nyOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const good = n[1] > 2*n[0];
+  return [st('Nyquist frequency', fmt(n[1]/2),'Hz','hot'),
+          st('Sampling check', good ? 'sufficient — no aliasing' : 'ALIASED', '', good?'good':'bad'),
+          st('Oversampling ratio', fmt(n[1]/(2*n[0])),'×')];
+}};
+
+CALCS.rm = {i:['rm_A'], out:'rmOut', fn(n){
+  if(!ok(n[0]) || n[0]<=0) return [];
+  const A = n[0];
+  return [st('RMS', fmt(A/Math.SQRT2),'','hot'),
+          st('Crest factor', fmt(Math.SQRT2),''),
+          st('Peak-to-peak', fmt(2*A),''),
+          st('PAPR (sine)', fmt(3.01),'dB')];
+}};
+
+CALCS.fh = {i:['fh_f','fh_a','fh_n'], out:'fhOut', fn(n){
+  if(!ok(...n) || n[0]<=0 || n[1]<=0) return [];
+  const nn = Math.round(n[2]);
+  if(nn<1) return [st('Harmonic n','use an integer ≥ 1','','bad')];
+  return [st('Harmonic '+nn+' frequency', fmt(nn*n[0]),'Hz','hot'),
+          st('RMS of component', fmt(n[1]/Math.SQRT2),''),
+          st('Rel. to 1.0 peak ref', fmt(20*Math.log10(n[1])),'dB')];
+}};
+
+CALCS.vg = {i:['vg_f','vg_l','vg_f2','vg_l2'], out:'vgOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const [f1,l1,f2,l2] = n;
+  const vp1 = f1*l1, vp2 = f2*l2;
+  const dk = 1/l2 - 1/l1, df = f2 - f1;
+  const rows = [st('Phase velocity v₁', fmt(vp1),'m/s','hot'),
+                st('Phase velocity v₂', fmt(vp2),'m/s')];
+  if(Math.abs(dk)>1e-12) rows.push(st('Group velocity vg', fmt(df/dk),'m/s','hot'));
+  else rows.push(st('Group velocity','undefined (Δk = 0)','','bad'));
+  rows.push(st('Dispersion', Math.abs(vp1-vp2)/Math.max(vp1,vp2)<0.001
+               ? 'none — non-dispersive' : 'present'));
+  return rows;
+}};
+
+CALCS.dp = {i:['dp_f1','dp_l1','dp_f2','dp_l2'], out:'dpOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const v1 = n[0]*n[1], v2 = n[2]*n[3];
+  const rel = (v2-v1)/v1;
+  return [st('v at f₁', fmt(v1),'m/s'), st('v at f₂', fmt(v2),'m/s'),
+          st('Δv', fmt(v2-v1),'m/s','hot'),
+          st('Relative change', pct(rel),''),
+          st('Character', Math.abs(rel)<0.005 ? 'essentially non-dispersive'
+               : rel>0 ? 'velocity rises with f' : 'velocity falls with f')];
+}};
+
+CALCS.upe = {i:['upe_c','upe_t','upe_f','upe_n'], out:'upeOut', fn(n){
+  if(!ok(...n) || n[0]<=0 || n[2]<=0) return [];
+  const [c,tus,f,nc] = n;
+  const depth = c*tus*1e-6/2;
+  const lam = c/(f*1e6);
+  return [depth<1 ? st('Reflecting depth', fmt(depth*100),'cm','hot')
+                  : st('Reflecting depth', fmt(depth),'m','hot'),
+          st('Pulse wavelength λ', fmt(lam*1000),'mm'),
+          st('Axial resolution', fmt(nc*lam/2*1000),'mm')];
+}};
+
+CALCS.att = {i:['att_a','att_f','att_d'], out:'attOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<0) || n[1]<=0) return [];
+  const [a,f,d] = n;
+  const two = 2*a*f*d;
+  return [st('One-way loss', fmt(a*f*d),'dB'),
+          st('Two-way loss', fmt(two),'dB','hot'),
+          st('Return amplitude', pct(Math.pow(10,-two/20)),'')];
+}};
+
+CALCS.nf = {i:['nf_D','nf_f','nf_c'], out:'nfOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const [Dmm,f,c] = n;
+  const lam = c/(f*1e6)*1000;
+  const N = Dmm*Dmm/(4*lam);
+  const rows = [st('Wavelength λ', fmt(lam),'mm'),
+                st('Near-field length N', fmt(N),'mm','hot')];
+  const s = 1.219*lam/Dmm;
+  if(s<1) rows.push(st('Divergence (first zero)', fmt(Math.asin(s)/D2R),'deg'));
+  else rows.push(st('Divergence','λ/D too large for a beam'));
+  return rows;
+}};
+
+CALCS.ud = {i:['ud_f','ud_v','ud_th','ud_c'], out:'udOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const [f,v,th,c] = n;
+  const fd = 2*f*1e6*v*Math.cos(th*D2R)/c;
+  return [st('Doppler shift fd', fmt(fd/1000),'kHz','hot'),
+          st('Max shift (θ = 0°)', fmt(2*f*1e6*v/c/1000),'kHz')];
+}};
+
+CALCS.rg = {i:['rg_a','rg_b','rg_m','rg_n','rg_f'], out:'rgOut', fn(n){
+  if(!ok(...n) || n[0]<=0 || n[1]<=0) return [];
+  const [a,b,m,nn,fG] = n;
+  if(m<0 || nn<0 || (m===0 && nn===0)) return [st('Mode (m,n)','m = n = 0 is not a valid mode','','bad')];
+  const c0 = 299792458, am = a/1000, bm = b/1000;
+  const fc = (c0/2)*Math.sqrt((m/am)**2 + (nn/bm)**2);
+  const rows = [st('Cutoff fc(m,n)', fmt(fc/1e9),'GHz','hot'),
+                st('TE₁₀ dominant fc', fmt(c0/(2*am)/1e9),'GHz')];
+  const f = fG*1e9;
+  if(f>fc){
+    const rat = 1 - (fc/f)**2;
+    rows.push(st('Guide wavelength λg', fmt((c0/f)/Math.sqrt(rat)*1000),'mm'));
+    rows.push(st('vp / c', fmt(1/Math.sqrt(rat)),'×'));
+  } else rows.push(st('At this frequency','evanescent — below cutoff','','bad'));
+  return rows;
+}};
+
+CALCS.cg = {i:['cg_r'], out:'cgOut', fn(n){
+  if(!ok(n[0]) || n[0]<=0) return [];
+  const c0 = 299792458, r = n[0]/1000;
+  return [st('TE₁₁ cutoff (dominant)', fmt(1.8412*c0/(2*Math.PI*r)/1e9),'GHz','hot'),
+          st('TM₀₁ cutoff', fmt(2.4048*c0/(2*Math.PI*r)/1e9),'GHz'),
+          st('Diameter', fmt(2*n[0]),'mm')];
+}};
+
+CALCS.gw = {i:['gw_f','gw_fc'], out:'gwOut', fn(n){
+  if(!ok(...n) || n.some(x=>x<=0)) return [];
+  const c0 = 299792458, f = n[0]*1e9, fc = n[1]*1e9;
+  if(f<=fc) return [st('Propagation','evanescent — f must exceed fc','','bad')];
+  const r = 1 - (fc/f)**2, l0 = c0/f;
+  return [st('Free-space λ₀', fmt(l0*1000),'mm'),
+          st('Guide λg', fmt(l0/Math.sqrt(r)*1000),'mm','hot'),
+          st('vp / c', fmt(1/Math.sqrt(r)),'×'),
+          st('vg / c', fmt(Math.sqrt(r)),'×')];
+}};
+
+/* ---------- calc engine: parse, validate, render, wire ---------- */
+function runCalc(key){
+  const d = CALCS[key];
+  const raw = d.i.map(id => byId(id).value.trim());
+  const n = raw.map(s => { const v = parseFloat(s); return isFinite(v) ? v : NaN; });
+  const sels = (d.s||[]).map(id => byId(id).value);
+  let rows = [];
+  try { rows = d.fn(n, raw, sels) || []; }
+  catch(e){ rows = [st('Error', e.message || 'invalid input','','bad')]; }
+  if(!rows.length) rows = [st('Status','waiting for valid inputs','','bad')];
+  render(d.out, rows);
+}
+
+const RUNNERS = [];
+Object.keys(CALCS).forEach(key => {
+  const card = document.querySelector('[data-calc="'+key+'"]');
+  if(!card) return;
+  const run = () => runCalc(key);
+  card.querySelectorAll('input,select').forEach(el => {
+    el.addEventListener('input', run);
+    el.addEventListener('change', run);
+  });
+  const btn = card.querySelector('.btn.primary');
+  if(btn) btn.addEventListener('click', run);
+  RUNNERS.push(run);
+});
+
+/* ============================================================
+   VISUAL LAB — one state object, one render loop, live controls
+   ============================================================ */
+const Lab = (() => {
+  const cv = byId('labCanvas'), ctx = cv.getContext('2d');
+  const stage = byId('labStage'), controlsEl = byId('labControls'),
+        readEl = byId('labReadouts'), captionEl = byId('labCaption'),
+        modesEl = byId('labModes'), playBtn = byId('labPlay'),
+        resetBtn = byId('labReset'), speedEl = byId('labSpeed'),
+        speedVal = byId('labSpeedVal');
+
+  const MONO = '"IBM Plex Mono",Consolas,monospace';
+  const COL = { bg:'#191512', grid:'rgba(231,229,228,.07)', axis:'rgba(231,229,228,.16)',
+                trace:'#fbbf24', soft:'#a8a29e', cream:'#f5f5f4' };
+
+  const S = { mode:'travel', t:0, playing:true, speed:1, p:{},
+              fronts:[], nextEmit:0, fo:null, mouse:null, raf:0, active:false };
+
+  /* ---------- drawing helpers ---------- */
+  function bg1d(w,h,divs=10){
+    ctx.fillStyle = COL.bg; ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+    for(let i=1;i<8;i++){ const y=h*i/8; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+    for(let i=1;i<divs;i++){ const x=w*i/divs; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+    ctx.strokeStyle = COL.axis;
+    ctx.beginPath(); ctx.moveTo(0,h/2); ctx.lineTo(w,h/2); ctx.stroke();
+  }
+  function curve(w,h,half,pad,fn,color,lw,dash){
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = lw||2; ctx.lineJoin = 'round';
+    if(dash) ctx.setLineDash(dash);
+    const amp = h/2 - pad;
+    ctx.beginPath();
+    for(let px=0; px<=w; px+=2){
+      const py = h/2 - (fn(px)/half)*amp;
+      px===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+    }
+    ctx.stroke(); ctx.restore();
+  }
+  function probe(w,h,half,pad,yfn,labelFn){
+    if(!S.mouse) return;
+    const px = Math.max(0, Math.min(w, S.mouse.x));
+    ctx.save();
+    ctx.strokeStyle = 'rgba(245,245,244,.35)'; ctx.setLineDash([3,4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(px,6); ctx.lineTo(px,h-6); ctx.stroke();
+    const y = yfn(px);
+    const py = h/2 - (y/half)*(h/2-pad);
+    ctx.setLineDash([]);
+    ctx.fillStyle = COL.cream;
+    ctx.beginPath(); ctx.arc(px,py,3.5,0,7); ctx.fill();
+    ctx.font = '600 10px '+MONO;
+    const label = labelFn(px,y);
+    const lx = Math.min(px+8, w-14-ctx.measureText(label).width);
+    ctx.fillStyle = 'rgba(245,245,244,.85)';
+    ctx.fillText(label, lx, Math.max(py-8,14));
+    ctx.restore();
+  }
+  function pos(px,py,label){
+    ctx.font = '600 10px '+MONO; ctx.fillStyle = 'rgba(245,245,244,.75)';
+    ctx.fillText(label, px+9, py+3);
+  }
+
+  /* interference color LUT: dark → amber → cream */
+  const LUT = (() => {
+    const mix = (a,b,t) => a.map((x,i)=>Math.round(x+(b[i]-x)*t));
+    const arr = [];
+    for(let i=0;i<256;i++){
+      const v = i/255;
+      arr.push(v<0.5 ? mix([23,20,16],[146,64,14],v*2) : mix([146,64,14],[253,230,138],(v-0.5)*2));
+    }
+    return arr;
+  })();
+  const off = document.createElement('canvas'), octx = off.getContext('2d');
+  let img = null, ow = 0, oh = 0;
+  function ensureOff(w,h){
+    const sc = Math.max(2, Math.ceil(w/460));
+    const nw = Math.max(2, Math.floor(w/sc)), nh = Math.max(2, Math.floor(h/sc));
+    if(nw!==ow || nh!==oh){ off.width=nw; off.height=nh; ow=nw; oh=nh; img=octx.createImageData(nw,nh); }
+    return sc;
+  }
+
+  function fcoef(wave,k){
+    if(wave==='square')  return k%2 ? 4/(Math.PI*k) : 0;
+    if(wave==='saw')     return 2/(Math.PI*k)*(k%2?1:-1);
+    if(k%2) return 8/(Math.PI*Math.PI*k*k)*((((k-1)/2)|0)%2 ? -1 : 1);
+    return 0;
+  }
+
+  const Lst = 8; // standing-wave string length (m, display)
+
+  /* ---------- experiments ---------- */
+  const MODES = {
+    travel:{
+      label:'Traveling wave',
+      hint:'A continuous right-moving sinusoid, y = A sin(kx − ωt + φ₀). The bracket tracks one wavelength as it travels. Hover the stage to probe displacement.',
+      params:[
+        {id:'f',  label:'Frequency f',  min:0.1, max:3,  step:0.01, val:1,   unit:'Hz'},
+        {id:'lam',label:'Wavelength λ', min:0.5, max:8,  step:0.05, val:2.5, unit:'m'},
+        {id:'A',  label:'Amplitude A',  min:0.05,max:1,  step:0.01, val:0.6, unit:''},
+        {id:'phi',label:'Phase φ₀',     min:-180,max:180,step:1,    val:0,   unit:'°'},
+      ],
+      draw(w,h,p,t){
+        const ph = p.phi*D2R, Lm = 10;
+        const y = px => p.A*Math.sin(2*Math.PI*(px/w*Lm)/p.lam - 2*Math.PI*p.f*t + ph);
+        bg1d(w,h,10);
+        const half = 1, pad = 30;
+        curve(w,h,half,pad,()=> p.A, 'rgba(251,191,36,.22)',1,[5,6]);
+        curve(w,h,half,pad,()=>-p.A, 'rgba(251,191,36,.22)',1,[5,6]);
+        curve(w,h,half,pad,y, COL.trace, 2.2);
+        // wavelength bracket riding a crest
+        let xc = ((0.25 - ph/(2*Math.PI) + p.f*t)*p.lam) % p.lam;
+        if(xc<0) xc += p.lam;
+        const x2 = xc + p.lam;
+        if(x2 <= Lm-0.2){
+          const p1 = xc/Lm*w, p2 = x2/Lm*w, py = h/2 - p.A*(h/2-pad) - 14;
+          ctx.save();
+          ctx.strokeStyle = COL.soft; ctx.fillStyle = COL.soft; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(p1,py); ctx.lineTo(p2,py); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(p1,py-5); ctx.lineTo(p1,py+5);
+          ctx.moveTo(p2,py-5); ctx.lineTo(p2,py+5); ctx.stroke();
+          ctx.font = '600 10px '+MONO;
+          const lb = 'λ = '+(+p.lam.toFixed(2))+' m';
+          ctx.fillText(lb,(p1+p2)/2 - ctx.measureText(lb).width/2, py-8);
+          ctx.restore();
+        }
+        probe(w,h,half,pad,y,(px,yy)=>{
+          const x = px/w*Lm;
+          return 'x = '+x.toFixed(2)+' m   y = '+(yy>=0?'+':'')+yy.toFixed(2);
+        });
+      },
+      ro(p){
+        return [['v = λf',(p.lam*p.f).toFixed(2)+' m/s'],['T',(1/p.f).toFixed(2)+' s'],
+                ['k',(2*Math.PI/p.lam).toFixed(2)+' rad/m'],['ω',(2*Math.PI/p.f).toFixed(2)+' rad/s']];
+      }
+    },
+
+    standing:{
+      label:'Standing wave',
+      hint:'Incident + reflected wave with coefficient R. R = −1 (fixed end) gives a pure standing wave; R = 0 no reflection (pure traveling wave); R = +1 a free end. The dashed curves are the envelope; circles mark nodes.',
+      params:[
+        {id:'n',label:'Harmonic n',  min:1,  max:8,  step:1,    val:3,   unit:''},
+        {id:'f',label:'Frequency (display)', min:0.1, max:2, step:0.01, val:0.6, unit:'Hz'},
+        {id:'A',label:'Amplitude A', min:0.1,max:0.8,step:0.01, val:0.55,unit:''},
+        {id:'R',label:'Reflection R',min:-1, max:1,  step:0.05, val:-1,  unit:''},
+      ],
+      draw(w,h,p,t){
+        const k = p.n*Math.PI/Lst, wt = 2*Math.PI*p.f*t, R = p.R;
+        const y = px => { const x = px/w*Lst;
+          return p.A*((1+R)*Math.cos(k*x)*Math.sin(wt) + (R-1)*Math.sin(k*x)*Math.cos(wt)); };
+        const env = px => { const x = px/w*Lst;
+          return p.A*Math.hypot((1+R)*Math.cos(k*x),(R-1)*Math.sin(k*x)); };
+        bg1d(w,h,10);
+        const half = 1.7, pad = 30;
+        ctx.save();
+        ctx.strokeStyle = 'rgba(245,245,244,.25)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(2,10); ctx.lineTo(2,h-10);
+        ctx.moveTo(w-2,10); ctx.lineTo(w-2,h-10); ctx.stroke();
+        ctx.restore();
+        curve(w,h,half,pad,env,   'rgba(168,161,158,.5)',1.2,[4,5]);
+        curve(w,h,half,pad,px=>-env(px),'rgba(168,161,158,.5)',1.2,[4,5]);
+        curve(w,h,half,pad,y, COL.trace, 2.2);
+        if(Math.abs(Math.abs(R)-1) < 0.05){
+          const offn = R<0 ? 0 : 0.5;
+          ctx.save();
+          ctx.fillStyle = COL.bg; ctx.strokeStyle = COL.cream; ctx.lineWidth = 1.5;
+          for(let m=0;m<=p.n;m++){
+            const xw = (m+offn)*Lst/p.n;
+            if(xw>Lst) break;
+            ctx.beginPath(); ctx.arc(xw/Lst*w, h/2, 4, 0, 7); ctx.fill(); ctx.stroke();
+          }
+          ctx.restore();
+        }
+        probe(w,h,half,pad,y,(px,yy)=>{
+          const x = px/w*Lst;
+          return 'x = '+x.toFixed(2)+' m   y = '+(yy>=0?'+':'')+yy.toFixed(2);
+        });
+      },
+      ro(p){
+        const aR = Math.abs(p.R);
+        const swr = aR>=0.999 ? '∞' : ((1+aR)/(1-aR)).toFixed(2);
+        return [['λ = 2L/n',(2*Lst/p.n).toFixed(2)+' m'],['SWR',swr],
+                ['|R|',aR.toFixed(2)],['nodes',p.R<0 ? String(p.n+1) : String(p.n)]];
+      }
+    },
+
+    inter2d:{
+      label:'Two-source interference',
+      hint:'Two coherent point sources in a 2-D medium. “Instantaneous” shows the live wavefield (crests bright); “Averaged” shows the time-averaged intensity with fringes wherever Δr = mλ.',
+      params:[
+        {id:'lam',label:'Wavelength λ', min:0.05,max:0.25,step:0.005,val:0.1, unit:'m'},
+        {id:'d',  label:'Separation d', min:0.1, max:0.9, step:0.01, val:0.5, unit:'m'},
+        {id:'phi',label:'Phase diff φ', min:0,  max:360,  step:5,    val:0,   unit:'°'},
+        {id:'f',  label:'Frequency (animation)', min:0.2, max:8, step:0.1, val:3, unit:'Hz'},
+        {id:'view',label:'Display', type:'select', val:'live',
+         options:[{v:'live',t:'Instantaneous field'},{v:'avg',t:'Averaged intensity'}]},
+      ],
+      draw(w,h,p,t){
+        const Wm = 2.2, Hm = Wm*h/w;
+        const sy = Hm/2, s1x = Wm/2 - p.d/2, s2x = Wm/2 + p.d/2;
+        const k = 2*Math.PI/p.lam, wt = 2*Math.PI*p.f*t, ph = p.phi*D2R;
+        const sc = ensureOff(w,h);
+        const data = img.data; let q = 0;
+        for(let j=0;j<oh;j++){
+          const yy = ((j+0.5)*sc)/h*Hm;
+          for(let i=0;i<ow;i++){
+            const xx = ((i+0.5)*sc)/w*Wm;
+            const r1 = Math.hypot(xx-s1x, yy-sy), r2 = Math.hypot(xx-s2x, yy-sy);
+            let v;
+            if(p.view==='live') v = (Math.cos(k*r1-wt) + Math.cos(k*r2-wt+ph) + 2)*0.25;
+            else                v = (1 + Math.cos(k*(r1-r2)+ph))*0.5;
+            v = v<0?0:v>1?1:v;
+            const c = LUT[(v*255)|0];
+            data[q++]=c[0]; data[q++]=c[1]; data[q++]=c[2]; data[q++]=255;
+          }
+        }
+        octx.putImageData(img,0,0);
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(off,0,0,w,h);
+        // sources
+        const py = sy/Hm*h;
+        [[s1x/Wm*w,'S₁'],[s2x/Wm*w,'S₂']].forEach(([px,lb])=>{
+          ctx.save();
+          ctx.fillStyle = COL.cream; ctx.strokeStyle = COL.trace; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(px,py,5,0,7); ctx.fill(); ctx.stroke();
+          ctx.restore();
+          pos(px,py,lb);
+        });
+        // separation line
+        ctx.save();
+        ctx.strokeStyle = 'rgba(245,245,244,.35)'; ctx.setLineDash([3,4]); ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(s1x/Wm*w,py); ctx.lineTo(s2x/Wm*w,py); ctx.stroke();
+        ctx.setLineDash([]);
+        const lb = 'd = '+(+p.d.toFixed(2))+' m';
+        ctx.font = '600 10px '+MONO; ctx.fillStyle = 'rgba(245,245,244,.7)';
+        ctx.fillText(lb,(s1x/Wm*w+s2x/Wm*w)/2 - ctx.measureText(lb).width/2, py-8);
+        // λ scale bar
+        const bl = p.lam/Wm*w, bx = 12, by = h-18;
+        ctx.strokeStyle = COL.trace; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx+bl,by); ctx.stroke();
+        ctx.font = '600 10px '+MONO; ctx.fillStyle = 'rgba(251,191,36,.9)';
+        ctx.fillText('λ', bx+bl/2-3, by-6);
+        ctx.restore();
+      },
+      ro(p){
+        const dl = p.d/p.lam, m = Math.floor(dl);
+        return [['λ',(+p.lam.toFixed(3))+' m'],['d/λ',dl.toFixed(1)],
+                ['φ',p.phi+'°'],['maxima',String(2*Math.max(0,m)+1)]];
+      }
+    },
+
+    beats:{
+      label:'Beats',
+      hint:'Two close frequencies: the trace is the sum, the dashed curves are the loudness envelope beating at |f₁ − f₂|. The x-axis scrolls in real time.',
+      params:[
+        {id:'f1',label:'Frequency f₁', min:2, max:10, step:0.05, val:6,   unit:'Hz'},
+        {id:'f2',label:'Frequency f₂', min:2, max:10, step:0.05, val:6.4, unit:'Hz'},
+        {id:'A2',label:'Amplitude A₂', min:0.1,max:1, step:0.01, val:1,   unit:''},
+      ],
+      draw(w,h,p,t){
+        const df = Math.abs(p.f1-p.f2);
+        const W = df>0.03 ? Math.min(12, Math.max(1, 3.5/df)) : 2;
+        const t0 = t, half = 1+p.A2+0.05, pad = 30;
+        bg1d(w,h,8);
+        const env = px => { const tau = t0 + px/w*W;
+          return Math.sqrt(1 + p.A2*p.A2 + 2*p.A2*Math.cos(2*Math.PI*df*tau)); };
+        curve(w,h,half,pad,env,    'rgba(168,161,158,.55)',1.2,[5,6]);
+        curve(w,h,half,pad,px=>-env(px),'rgba(168,161,158,.55)',1.2,[5,6]);
+        const y = px => { const tau = t0 + px/w*W;
+          return Math.sin(2*Math.PI*p.f1*tau) + p.A2*Math.sin(2*Math.PI*p.f2*tau); };
+        curve(w,h,half,pad,y, COL.trace, 1.8);
+        // time axis
+        ctx.save();
+        ctx.strokeStyle = COL.axis; ctx.fillStyle = 'rgba(231,229,228,.55)';
+        ctx.font = '500 9px '+MONO; ctx.lineWidth = 1;
+        for(let i=0;i<=6;i++){
+          const px = w*i/6;
+          ctx.beginPath(); ctx.moveTo(px,h-8); ctx.lineTo(px,h-14); ctx.stroke();
+          ctx.fillText((t0 + W*i/6).toFixed(1), Math.min(px+3,w-20), h-18);
+        }
+        ctx.fillText('time (s)', w-58, 14);
+        ctx.restore();
+        probe(w,h,half,pad,y,(px,yy)=>{
+          const tau = t0 + px/w*W;
+          return 't = '+tau.toFixed(2)+' s   y = '+(yy>=0?'+':'')+yy.toFixed(2);
+        });
+      },
+      ro(p){
+        const df = Math.abs(p.f1-p.f2);
+        return [['f_beat',df.toFixed(2)+' Hz'],['T_beat',df>0?(1/df).toFixed(2)+' s':'—'],
+                ['carrier',((p.f1+p.f2)/2).toFixed(2)+' Hz'],['peak',(1+p.A2).toFixed(2)]];
+      }
+    },
+
+    fourier:{
+      label:'Fourier synthesis',
+      hint:'Build a square, sawtooth or triangle wave from its harmonics. The faint dashed curve is the ideal target; the bars below are the live spectrum. The readout reports peak overshoot (Gibbs).',
+      params:[
+        {id:'wave',label:'Target waveform', type:'select', val:'square',
+         options:[{v:'square',t:'Square'},{v:'saw',t:'Sawtooth'},{v:'triangle',t:'Triangle'}]},
+        {id:'N',label:'Harmonics N', min:1, max:40, step:1,   val:8,  unit:''},
+        {id:'f',label:'Fundamental f₀', min:0.1, max:2, step:0.01, val:0.4, unit:'Hz'},
+      ],
+      draw(w,h,p,t){
+        const phase = 2*Math.PI*p.f*t;
+        const y = px => { const th = (px/w)*4*Math.PI - phase;
+          let s = 0; for(let k=1;k<=p.N;k++) s += fcoef(p.wave,k)*Math.sin(k*th);
+          return s; };
+        const ideal = px => { const th = (px/w)*4*Math.PI - phase, qq = th/(2*Math.PI);
+          if(p.wave==='square')   return Math.sign(Math.sin(th));
+          if(p.wave==='saw')      return 2*(qq - Math.floor(qq+0.5));
+          return 2/Math.PI*Math.asin(Math.sin(th));
+        };
+        bg1d(w,h,8);
+        const half = 1.4, pad = 26;
+        curve(w,h,half,pad,ideal,'rgba(245,245,244,.35)',1.2,[4,5]);
+        curve(w,h,half,pad,y, COL.trace, 2.2);
+        // spectrum strip
+        const base = h-22, maxH = 34;
+        const c1 = Math.abs(fcoef(p.wave,1)) || 1;
+        const bw = (w-32)/Math.max(p.N,8);
+        ctx.save();
+        ctx.strokeStyle = COL.axis; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(16,base); ctx.lineTo(w-16,base); ctx.stroke();
+        for(let k=1;k<=p.N;k++){
+          const a = Math.abs(fcoef(p.wave,k))/c1;
+          ctx.fillStyle = k===1 ? '#fde68a' : 'rgba(251,191,36,.8)';
+          ctx.fillRect(16+(k-1)*bw+1, base-a*maxH, Math.max(1,bw-2), a*maxH);
+        }
+        ctx.fillStyle = 'rgba(231,229,228,.55)'; ctx.font = '500 9px '+MONO;
+        ctx.fillText('harmonic spectrum', 16, base-maxH-8);
+        ctx.fillText('1', 16, base+11);
+        ctx.fillText(String(p.N), w-16-ctx.measureText(String(p.N)).width, base+11);
+        ctx.restore();
+        probe(w,h,half,pad,y,(px,yy)=>{
+          const th = (px/w)*4*Math.PI - phase;
+          return 'θ = '+(th%(2*Math.PI)).toFixed(2)+' rad   y = '+(yy>=0?'+':'')+yy.toFixed(2);
+        });
+      },
+      ro(p){
+        let s2 = 0;
+        for(let k=1;k<=p.N;k++){ const c = fcoef(p.wave,k); s2 += c*c/2; }
+        let pk = 0;
+        for(let i=0;i<240;i++){
+          const th = i/240*2*Math.PI; let s = 0;
+          for(let k=1;k<=p.N;k++) s += fcoef(p.wave,k)*Math.sin(k*th);
+          pk = Math.max(pk, Math.abs(s));
+        }
+        return [['N',p.N+' harmonics'],['f₀',p.f.toFixed(2)+' Hz'],
+                ['peak |y|',pk.toFixed(3)],['overshoot',((pk-1)*100).toFixed(1)+' %'],
+                ['RMS',Math.sqrt(s2).toFixed(3)]];
+      }
+    },
+
+    doppler:{
+      label:'Doppler & shock',
+      hint:'A source moving at Mach M emits circular wavefronts (c = 6 m/s in model units). Wavefronts bunch ahead of the source and stretch behind it; above M = 1 a Mach cone appears. The experiment loops when the source exits.',
+      params:[
+        {id:'M',label:'Mach number M', min:0,   max:1.6,step:0.02,val:0.6,unit:''},
+        {id:'f',label:'Emitted f₀',    min:0.5, max:4,  step:0.05,val:2,  unit:'Hz'},
+      ],
+      draw(w,h,p,t){
+        const c = 6, Wm = 40, Hm = Wm*h/w, sy = Hm/2;
+        const s = w/Wm;
+        ctx.fillStyle = COL.bg; ctx.fillRect(0,0,w,h);
+        let sx = 4 + p.M*c*S.t;
+        if(sx > Wm+6){ S.t = 0; S.fronts = []; S.nextEmit = 0; sx = 4; }
+        while(S.t >= S.nextEmit){
+          S.fronts.push({x:sx, y:sy, b:S.t});
+          S.nextEmit += 1/p.f;
+          if(S.fronts.length>150) S.fronts.shift();
+        }
+        // ground ruler
+        ctx.save();
+        ctx.strokeStyle = COL.axis; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(0,h-24); ctx.lineTo(w,h-24); ctx.stroke();
+        ctx.fillStyle = 'rgba(231,229,228,.5)'; ctx.font = '500 9px '+MONO;
+        for(let m=0;m<=40;m+=10){
+          const px = m*Wm/w*w;
+          ctx.beginPath(); ctx.moveTo(px,h-24); ctx.lineTo(px,h-29); ctx.stroke();
+          if(px < w-34) ctx.fillText(m+' m', px+2, h-31);
+        }
+        // wavefronts
+        S.fronts.forEach(f => {
+          const r = (S.t-f.b)*c;
+          if(r>60) return;
+          const a = Math.max(0, 1-r/55)*0.7;
+          if(a<=0.01) return;
+          ctx.strokeStyle = 'rgba(251,191,36,'+a.toFixed(3)+')';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(f.x*s, f.y*s, r*s, 0, 7); ctx.stroke();
+        });
+        // mach cone
+        const spx = sx*s, spy = sy*s;
+        if(p.M>1){
+          const mu = Math.asin(1/p.M), Lw = 70;
+          const dx = -Lw*Math.cos(mu)*s, dy = Lw*Math.sin(mu)*s;
+          ctx.strokeStyle = 'rgba(245,245,244,.5)'; ctx.setLineDash([6,5]); ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(spx,spy); ctx.lineTo(spx+dx,spy+dy);
+          ctx.moveTo(spx,spy); ctx.lineTo(spx+dx,spy-dy);
+          ctx.stroke(); ctx.setLineDash([]);
+          ctx.font = '600 10px '+MONO; ctx.fillStyle = 'rgba(245,245,244,.6)';
+          ctx.fillText('Mach cone  μ = '+(mu/D2R).toFixed(0)+'°', spx+dx*0.6, spy+dy*0.55);
+        }
+        // observer
+        const oW = {x:Wm*0.86, y:Hm*0.78};
+        const opx = oW.x*s, opy = oW.y*s;
+        ctx.strokeStyle = 'rgba(245,245,244,.15)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(spx,spy); ctx.lineTo(opx,opy); ctx.stroke();
+        ctx.fillStyle = COL.cream;
+        ctx.beginPath(); ctx.arc(opx,opy,4,0,7); ctx.fill();
+        pos(opx,opy,'O');
+        // source + velocity arrow
+        ctx.fillStyle = COL.trace;
+        ctx.beginPath(); ctx.arc(spx,spy,5,0,7); ctx.fill();
+        ctx.strokeStyle = COL.trace; ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.moveTo(spx+8,spy); ctx.lineTo(spx+30,spy); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(spx+30,spy); ctx.lineTo(spx+24,spy-4);
+        ctx.moveTo(spx+30,spy); ctx.lineTo(spx+24,spy+4); ctx.stroke();
+        pos(spx,spy,'S');
+        // observed frequency (ray geometry)
+        const ddx = oW.x-sx, ddy = oW.y-sy, dist = Math.hypot(ddx,ddy);
+        if(dist>0.01){
+          const den = 1 - p.M*(ddx/dist);
+          S.fo = den>0.03 ? p.f/den : null;
+        }
+        ctx.restore();
+      },
+      ro(p){
+        return [['M',p.M.toFixed(2)],['v (model)',(p.M*6).toFixed(1)+' m/s'],
+                ['f at O',S.fo===null?'shock':S.fo.toFixed(2)+' Hz'],
+                ['f/f₀',S.fo===null?'—':(S.fo/p.f).toFixed(2)]];
+      }
+    }
+  };
+
+  /* ---------- control system ---------- */
+  function buildControls(){
+    const m = MODES[S.mode];
+    S.p = {};
+    controlsEl.innerHTML = '';
+    m.params.forEach(pd => {
+      S.p[pd.id] = pd.val;
+      const ctl = document.createElement('div'); ctl.className = 'ctl';
+      const row = document.createElement('div'); row.className = 'ctl-row';
+      const lab = document.createElement('label'); lab.textContent = pd.label;
+      const val = document.createElement('span'); val.className = 'ctl-val';
+      row.appendChild(lab); row.appendChild(val);
+      ctl.appendChild(row);
+      let input;
+      if(pd.type==='select'){
+        input = document.createElement('select');
+        pd.options.forEach(o => { const op = document.createElement('option');
+          op.value = o.v; op.textContent = o.t; input.appendChild(op); });
+        input.value = pd.val;
+        const upd = () => { S.p[pd.id] = input.value;
+          val.textContent = input.options[input.selectedIndex].text; };
+        input.addEventListener('change', upd); upd();
+      } else {
+        input = document.createElement('input'); input.type = 'range';
+        input.min = pd.min; input.max = pd.max; input.step = pd.step; input.value = pd.val;
+        const dec = (String(pd.step).split('.')[1]||'').length;
+        const upd = () => { S.p[pd.id] = parseFloat(input.value);
+          val.textContent = (+parseFloat(input.value).toFixed(dec)) + (pd.unit ? ' '+pd.unit : ''); };
+        input.addEventListener('input', upd); upd();
+      }
+      ctl.appendChild(input);
+      controlsEl.appendChild(ctl);
+    });
+  }
+
+  function setMode(m){
+    S.mode = m; S.t = 0; S.fronts = []; S.nextEmit = 0; S.fo = null;
+    [...modesEl.children].forEach(b => b.classList.toggle('on', b.dataset.mode===m));
+    captionEl.textContent = MODES[m].hint;
+    buildControls();
+  }
+
+  const ICON_PLAY  = '<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M2.5 1.5v9l8-4.5z"/></svg>';
+  const ICON_PAUSE = '<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><rect x="2" y="1.5" width="3" height="9" rx="0.8"/><rect x="7" y="1.5" width="3" height="9" rx="0.8"/></svg>';
+  function setPlaying(v){
+    S.playing = v;
+    playBtn.innerHTML = v ? ICON_PAUSE : ICON_PLAY;
+    playBtn.title = v ? 'Pause (Space)' : 'Play (Space)';
+  }
+
+  /* ---------- render loop ---------- */
+  function paint(){
+    const w = cv.clientWidth, h = cv.clientHeight;
+    if(w<10 || h<10) return;
+    const dpr = window.devicePixelRatio || 1;
+    const bw = Math.round(w*dpr), bh = Math.round(h*dpr);
+    if(cv.width!==bw || cv.height!==bh){ cv.width = bw; cv.height = bh; }
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    MODES[S.mode].draw(w,h,S.p,S.t);
+  }
+  function updRead(){
+    const rows = MODES[S.mode].ro ? MODES[S.mode].ro(S.p) : [];
+    readEl.innerHTML = rows.map(r => '<span class="rpill">'+r[0]+' <b>'+r[1]+'</b></span>').join('');
+  }
+  let last = 0, lastRO = 0;
+  function frame(ts){
+    if(!S.active) return;
+    const dt = Math.min(0.05, Math.max(0,(ts-last)/1000)); last = ts;
+    if(S.playing) S.t += dt*S.speed;
+    paint();
+    if(ts-lastRO>120){ lastRO = ts; updRead(); }
+    S.raf = requestAnimationFrame(frame);
+  }
+  function start(){
+    if(S.active) return;
+    S.active = true; last = performance.now();
+    S.raf = requestAnimationFrame(frame);
+  }
+  function stop(){ S.active = false; cancelAnimationFrame(S.raf); }
+  function resetAll(){
+    setMode('travel'); setPlaying(true);
+    S.speed = 1; speedEl.value = 1; speedVal.textContent = '1.00×';
+  }
+
+  /* ---------- wiring ---------- */
+  Object.entries(MODES).forEach(([k,m]) => {
+    const b = document.createElement('button');
+    b.className = 'lab-mode'; b.dataset.mode = k; b.textContent = m.label;
+    b.addEventListener('click', () => setMode(k));
+    modesEl.appendChild(b);
+  });
+  playBtn.addEventListener('click', () => setPlaying(!S.playing));
+  resetBtn.addEventListener('click', () => { S.t = 0; S.fronts = []; S.nextEmit = 0; });
+  speedEl.addEventListener('input', () => {
+    S.speed = parseFloat(speedEl.value);
+    speedVal.textContent = S.speed.toFixed(2)+'×';
+  });
+  cv.addEventListener('pointermove', e => {
+    const r = cv.getBoundingClientRect();
+    S.mouse = { x:e.clientX-r.left, y:e.clientY-r.top };
+  });
+  cv.addEventListener('pointerleave', () => S.mouse = null);
+  document.addEventListener('keydown', e => {
+    if(e.code==='Space' && S.active && !/^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(e.target.tagName)){
+      e.preventDefault(); setPlaying(!S.playing);
+    }
+  });
+
+  setMode('travel');
+  setPlaying(true);
+  return { start, stop, resetAll };
+})();
+
+/* ============================================================
+   Navigation, reset, print, toast
+   ============================================================ */
+function go(pane){
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id==='pane-'+pane));
+  document.querySelectorAll('[data-pane]').forEach(b => b.classList.toggle('on', b.dataset.pane===pane));
+  if(pane==='lab') Lab.start(); else Lab.stop();
+  window.scrollTo({top:0});
+}
+document.querySelectorAll('[data-pane]').forEach(b =>
+  b.addEventListener('click', () => go(b.dataset.pane)));
+
+let toastTimer;
+function toast(msg){
+  const t = byId('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+byId('printBtn').addEventListener('click', () => window.print());
+
+const defaults = new Map();
+document.querySelectorAll('main input, main select').forEach(el => defaults.set(el, el.value));
+byId('resetBtn').addEventListener('click', () => {
+  defaults.forEach((v,el) => { el.value = v; });
+  RUNNERS.forEach(fn => fn());
+  Lab.resetAll();
+  go('home');
+  toast('Defaults restored');
+});
+
+/* initial fill of every calculator output */
+RUNNERS.forEach(fn => fn());
+</script>
+</body>
+</html>
